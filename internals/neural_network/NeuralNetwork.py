@@ -46,20 +46,17 @@ class NeuralNetwork:
         self.label = tf.placeholder(tf.float32, [None, label_shape[0], label_shape[1], label_shape[2]], name = 'label')
 
         layer = self.image
-        layer = tf.layers.conv2d(layer, 64, (7, 7), padding = 'SAME', activation = tf.nn.relu, name = 'conv0')
-        layer = tf.layers.conv2d(layer, 64, (5, 5), padding = 'SAME', activation = tf.nn.relu, name = 'conv1')
+        layer = tf.layers.conv2d(layer, 64, (5, 5), padding = 'SAME', activation = tf.nn.relu, name = 'conv0')
+        layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv1')
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool0')
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv2')
-        layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv3')
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool1')
-        layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv4')
-        layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv5')
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool1')
-        layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv6')
-        layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv7')
-        layer = tf.image.resize_nearest_neighbor(layer, size = label_shape[0:2], name = 'upsample1')
-        layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv8')
-        layer = tf.layers.conv2d(layer, label_shape[2], (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv9')
+        layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv3')
+        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool2')
+        layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv4')
+        layer = tf.image.resize_nearest_neighbor(layer, size = label_shape[0:2], name='upsample0')
+        layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv5')
+        layer = tf.layers.conv2d(layer, label_shape[2], (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv6')
 
         self.output = tf.identity(layer, name = 'output')
 
