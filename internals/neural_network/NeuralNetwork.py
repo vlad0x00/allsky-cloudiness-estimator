@@ -1,6 +1,6 @@
 import random
 import tensorflow as tf
-import cv2
+import scipy.misc
 import timeit
 import numpy as np
 import os.path
@@ -46,16 +46,16 @@ class NeuralNetwork:
         self.label = tf.placeholder(tf.float32, [None, label_shape[0], label_shape[1], label_shape[2]], name = 'label')
 
         layer = self.image
-        layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv0')
-        layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv1')
+        layer = tf.layers.conv2d(layer, 64, (7, 7), padding = 'SAME', activation = tf.nn.relu, name = 'conv0')
+        layer = tf.layers.conv2d(layer, 64, (5, 5), padding = 'SAME', activation = tf.nn.relu, name = 'conv1')
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool0')
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv2')
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv3')
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool1')
         layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv4')
         layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv5')
-        layer = tf.image.resize_nearest_neighbor(layer, size = (label_shape[0] // 2, label_shape[1] // 2), name = 'upsample0')
-        layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv6')
+        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool1')
+        layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv6')
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv7')
         layer = tf.image.resize_nearest_neighbor(layer, size = label_shape[0:2], name = 'upsample1')
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv8')
@@ -101,9 +101,8 @@ class NeuralNetwork:
     def train(self, image_and_label_paths, batch_size, epochs):
         if not self.model_loaded:
             print('NeuralNetwork: No model exists, creating one...')
-            test_image = cv2.imread(image_and_label_paths[0][0])
-            test_label = cv2.imread(image_and_label_paths[0][1])
-            test_label = cv2.cvtColor(test_label, cv2.COLOR_BGR2GRAY)
+            test_image = scipy.misc.imread(image_and_label_paths[0][0])
+            test_label = scipy.misc.imread(image_and_label_paths[0][1], flatten = True)
             test_label = np.reshape(test_label, (test_label.shape[0], test_label.shape[1], 1))
             self._create_model(test_image.shape, test_label.shape)
             print('NeuralNetwork: Model successfully created')
@@ -176,13 +175,11 @@ class NeuralNetwork:
             labels = []
 
             for idx in range(start, end):
-                image = cv2.imread(paths[idx][0])
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                image = scipy.misc.imread(paths[idx][0])
                 image = np.divide(image, 255)
                 images.append(image)
 
-                label = cv2.imread(paths[idx][1])
-                label = cv2.cvtColor(label, cv2.COLOR_BGR2GRAY)
+                label = scipy.misc.imread(paths[idx][1], flatten = True)
                 label = np.reshape(label, (label.shape[0], label.shape[1], 1))
                 label = np.divide(label, 255)
                 labels.append(label)
@@ -212,7 +209,7 @@ class NeuralNetwork:
 
         if outputs[0].shape < images[0].shape:
             for output in outputs:
-                output = cv2.resize(output, dsize = image.shape[0:2], interpolation = cv2.INTER_CUBIC)
+                output = scipy.misc.resize(output, size = image.shape[0:2], interp = 'bicubic')
 
     def close(self):
         self.writer.close()
