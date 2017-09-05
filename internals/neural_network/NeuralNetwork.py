@@ -56,7 +56,7 @@ class NeuralNetwork:
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv4')
         layer = tf.image.resize_nearest_neighbor(layer, size = label_shape[0:2], name='upsample0')
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv5')
-        layer = tf.layers.conv2d(layer, label_shape[2], (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv6')
+        layer = tf.layers.conv2d(layer, label_shape[2], (3, 3), padding = 'SAME', activation = tf.sigmoid, name = 'conv6')
 
         self.output = tf.identity(layer, name = 'output')
 
