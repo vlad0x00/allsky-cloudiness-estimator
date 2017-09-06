@@ -1,7 +1,7 @@
 import scipy.misc
 from neural_network.NeuralNetwork import NeuralNetwork
 
-COORDINATES_FILE = 'coordinates.txt'
+COORDINATES_FILE = 'horizontal_coordinates.txt'
 
 def estimate_cloudiness(image, coordinates):
     nn = NeuralNetwork()
