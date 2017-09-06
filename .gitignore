@@ -2,5 +2,4 @@ internals/labeled/
 internals/unlabeled/
 internals/processed/
 internals/logs/
-internals/model/
 __pycache__
