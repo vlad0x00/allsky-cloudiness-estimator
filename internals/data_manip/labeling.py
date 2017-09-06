@@ -1,5 +1,4 @@
 from os.path import splitext
-import cv2
 import numpy as np
 
 def is_label(path):
@@ -18,12 +17,8 @@ UNSURE_LOWER_LIMIT = 0.1
 UNSURE_UPPER_LIMIT = 0.9
 
 def normalize(label):
-    ret, clouded = cv2.threshold(label, 255 * UNSURE_UPPER_LIMIT, 255, cv2.THRESH_BINARY)
-
-    ret, semiclouded = cv2.threshold(label, 255 * UNSURE_LOWER_LIMIT, 255, cv2.THRESH_BINARY)
-    semiclouded -= clouded
-    semiclouded = np.divide(semiclouded, 2)
-
-    label = semiclouded + clouded
+    label[label < 255 * UNSURE_LOWER_LIMIT] = 0
+    label[np.logical_and(label >= 255 * UNSURE_LOWER_LIMIT, label < 255 * UNSURE_UPPER_LIMIT)] = 127
+    label[label >= 255 * UNSURE_UPPER_LIMIT] = 255
 
     return label

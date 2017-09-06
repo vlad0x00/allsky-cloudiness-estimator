@@ -1,7 +1,6 @@
 import random
 import tensorflow as tf
 import scipy.misc
-import timeit
 import numpy as np
 import os.path
 import math
@@ -126,8 +125,6 @@ class NeuralNetwork:
         saver = tf.train.Saver()
 
         for epoch in range(epochs):
-            start_time = timeit.default_timer()
-
             print('NeuralNetwork: Training... (Epoch {}/{})'.format(epoch + 1, epochs))
             training_losses = []
             for batch in tqdm(range(training_batches_per_epoch)):
@@ -166,9 +163,8 @@ class NeuralNetwork:
             else:
                 validation_loss = 0
 
-            elapsed = timeit.default_timer() - start_time
-            print("NeuralNetwork: Epoch {}/{}, training loss = {:.10g} validation loss = {:.10g} in {:.10g}s"
-                   .format(epoch + 1, epochs, training_loss, validation_loss, elapsed))
+            print("NeuralNetwork: Epoch {}/{}, training loss = {:.10g} validation loss = {:.10g}"
+                   .format(epoch + 1, epochs, training_loss, validation_loss))
 
             saver.save(self.session, MODEL_FILENAME)
         print('NeuralNetwork: Training done')
@@ -209,15 +205,13 @@ class NeuralNetwork:
     def run(self, images):
         if not self.model_loaded:
             print('No model to run the network on')
-            return
+            return []
 
         variables = [ self.output ]
         feed_dict = { self.image : images }
         outputs = self.session.run(variables, feed_dict = feed_dict)
 
-        if outputs[0].shape < images[0].shape:
-            for output in outputs:
-                output = scipy.misc.resize(output, size = image.shape[0:2], interp = 'bicubic')
+        return outputs
 
     def close(self):
         self.writer.close()
