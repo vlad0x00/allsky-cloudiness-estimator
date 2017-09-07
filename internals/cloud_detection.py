@@ -4,6 +4,7 @@ from neural_network.NeuralNetwork import NeuralNetwork
 COORDINATES_FILE = 'horizontal_coordinates.txt'
 
 def estimate_cloudiness(image, coordinates):
+    '''
     nn = NeuralNetwork()
     cloud_images = nn.run(images)
     nn.close()
@@ -25,24 +26,35 @@ def estimate_cloudiness(image, coordinates):
         percentages.append(cloudiness / points_inside)
 
     return percentages
+    '''
+    pass
 
 def get_image_coordinates(horizontal_coordinates):
     coordinates_file = open(COORDINATES_FILE)
 
-    coordinates = []
-
+    file_coordinates = []
     lines = coordinates_file.readlines()
     for line in lines:
+        line = line.strip().split(',')
         x, y, a, h = int(line[0]), int(line[1]), int(line[2]), int(line[3])
-        coordinates.append((x, y, a, h))
+        file_coordinates.append((x, y, a, h))
+    file_coordinates = sorted(file_coordinates, key = lambda x : x[3])
 
-    coordinates.sort()
-    images_coordinates = []
-    for coordinates in horizontal_coordinates:
-        
+    print(file_coordinates)
+
+    image_coordinates = []
+    exit_flag = False
+    for horizontal_ah in horizontal_coordinates:
+        for file_xyah in file_coordinates:
+            if horizontal_ah[1] >= file_xyah[3]:
+                
+                exit_flag = True
+                break
+        if exit_flag:
+            break
 
 def get_horizontal_coordinates(center_of_view, field_of_view):
-
+    return []
 
 def get_images(images_dir, start_date, end_date):
     images = []
@@ -63,3 +75,5 @@ def get_cloudiness_percentages(start_date, end_date, center_of_view, field_of_vi
         percentages.append(estimate_cloudiness(image, image_coordinates))
 
     return percentages
+
+get_image_coordinates(None)
