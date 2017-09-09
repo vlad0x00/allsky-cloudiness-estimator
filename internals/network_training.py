@@ -3,8 +3,8 @@
 import argparse
 from os import walk
 from os.path import join
-from neural_network.NeuralNetwork import NeuralNetwork
-from data_manip.labeling import is_label, remove_label
+from .neural_network.NeuralNetwork import NeuralNetwork
+from .utils.labeling import is_label, remove_label
 
 parser = argparse.ArgumentParser()
 parser.add_argument('image_dir', help = 'Directory with train images and their labels')

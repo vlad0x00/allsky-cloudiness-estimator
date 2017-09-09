@@ -1,5 +1,5 @@
-internals/labeled/
-internals/unlabeled/
-internals/processed/
+internals/labeled_images/
+internals/unlabeled_images/
+internals/processed_images/
 internals/logs/
 __pycache__

@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 VALIDATION_PERCENT = 0.1
 LOG_DIR = './logs/'
-MODEL_FILENAME = 'model/network_model'
+MODEL_FILENAME = os.path.dirname(os.path.abspath(__file__)) + '/../model/network_model'
 LEARNING_RATE = 0.001
 
 class NeuralNetwork:
@@ -54,12 +54,15 @@ class NeuralNetwork:
         start0 = layer
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool2')
         layer = tf.layers.conv2d(layer, 192, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv4')
+        layer = tf.layers.dropout(layer, rate = 0.25, name = 'drop0')
         start1 = layer
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool3')
         layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv5')
+        layer = tf.layers.dropout(layer, rate = 0.25, name = 'drop1')
         layer = tf.image.resize_nearest_neighbor(layer, size = (label_shape[0] // 2, label_shape[1] // 2), name='upsample0')
         end1 = layer
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv6')
+        layer = tf.layers.dropout(layer, rate = 0.25, name = 'drop2')
         layer = tf.image.resize_nearest_neighbor(layer, size = label_shape[0:2], name='upsample1')
         end0 = layer
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv7')

@@ -4,16 +4,16 @@ import argparse
 import multiprocessing
 import errno
 import sys
-import cv2
+import scipy.misc
 from multiprocessing.pool import ThreadPool
 from os.path import join, splitext, basename
 from os import makedirs, walk
-from data_manip.labeling import is_label, remove_label, add_label, normalize
-from data_manip.fixes import fix_dead_pixels
-from data_manip.sky_extractor import extract_sky
-from data_manip.data_generator import generate_data
-from data_manip.name_generator import generate_name
-from data_manip.patching import extract_patches
+from .utils.labeling import is_label, remove_label, add_label, normalize
+from .utils.fixes import fix_dead_pixels
+from .utils.sky_extractor import extract_sky
+from .utils.data_generator import generate_data
+from .utils.name_generator import generate_name
+from .utils.patching import extract_patches
 
 IMG_RESIZE = 512
 IMG_PATCH_SIZE = 256
@@ -68,8 +68,8 @@ def get_image_paths(input_dir, get_labeled = True):
 def process_labeled(input_img_path):
     print('Processing', input_img_path)
 
-    img = cv2.imread(input_img_path)
-    label = cv2.imread(add_label(input_img_path))
+    img = scipy.misc.imread(input_img_path)
+    label = scipy.misc.imread(add_label(input_img_path))
     if img is None or label is None:
         return
 
@@ -116,20 +116,20 @@ def process_labeled(input_img_path):
                 i += 1
 
         for patch, name in zip(img_patches, img_patch_names):
-            cv2.imwrite(join(args.output_dir, name), patch)
+            scipy.misc.imsave(join(args.output_dir, name), patch)
 
         for patch, name in zip(label_patches, label_patch_names):
-            cv2.imwrite(join(args.output_dir, name), patch)
+            scipy.misc.imsave(join(args.output_dir, name), patch)
     else:
         for img, label in zip(img_skies, label_skies):
             name = generate_name()
-            cv2.imwrite(join(args.output_dir, root + '_' + name + OUTPUT_EXTENSION), img)
-            cv2.imwrite(join(args.output_dir, root + '_' + name + 'l' + OUTPUT_EXTENSION), label)
+            scipy.misc.imsave(join(args.output_dir, root + '_' + name + OUTPUT_EXTENSION), img)
+            scipy.misc.imsave(join(args.output_dir, root + '_' + name + 'l' + OUTPUT_EXTENSION), label)
 
 def process_unlabeled(input_img_path):
     print('Processing', input_img_path)
 
-    img = cv2.imread(input_img_path)
+    img = scipy.misc.imread(input_img_path)
     if img is None:
         return
 
@@ -145,9 +145,9 @@ def process_unlabeled(input_img_path):
         )
 
         for patch in patches:
-            cv2.imwrite(join(args.output_dir, root + '_' + generate_name() + OUTPUT_EXTENSION), patch)
+            scipy.misc.imsave(join(args.output_dir, root + '_' + generate_name() + OUTPUT_EXTENSION), patch)
     else:
-        cv2.imwrite(join(args.output_dir, root + OUTPUT_EXTENSION), sky)
+        scipy.misc.imsave(join(args.output_dir, root + OUTPUT_EXTENSION), sky)
 
 def take(l, n):
     for i in range(n):
