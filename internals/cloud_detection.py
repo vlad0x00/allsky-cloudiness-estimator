@@ -46,13 +46,11 @@ def estimate_cloudiness(image_paths, coordinates):
             if i + j >= len(image_paths):
                 break
             image = scipy.misc.imread(image_paths[i + j])
-            image = np.array(image[:, :, ::-1])
+            image = np.array(image[:, :, ::-1]) # BGR -> RGB
             images.append(image)
 
         processed_images = process_images(images)
         cloud_outputs = neural_network.run(processed_images)
-
-        import cv2
 
         for cloud_output in cloud_outputs[0]:
             points_inside = 0

@@ -4,7 +4,7 @@ import argparse
 import multiprocessing
 import errno
 import sys
-import scipy.misc
+import cv2
 from multiprocessing.pool import ThreadPool
 from os.path import join, splitext, basename
 from os import makedirs, walk
@@ -68,8 +68,8 @@ def get_image_paths(input_dir, get_labeled = True):
 def process_labeled(input_img_path):
     print('Processing', input_img_path)
 
-    img = scipy.misc.imread(input_img_path)
-    label = scipy.misc.imread(add_label(input_img_path))
+    img = cv2.imread(input_img_path)
+    label = cv2.imread(add_label(input_img_path))
     if img is None or label is None:
         return
 
@@ -116,20 +116,20 @@ def process_labeled(input_img_path):
                 i += 1
 
         for patch, name in zip(img_patches, img_patch_names):
-            scipy.misc.imsave(join(args.output_dir, name), patch)
+            cv2.imwrite(join(args.output_dir, name), patch)
 
         for patch, name in zip(label_patches, label_patch_names):
-            scipy.misc.imsave(join(args.output_dir, name), patch)
+            cv2.imwrite(join(args.output_dir, name), patch)
     else:
         for img, label in zip(img_skies, label_skies):
             name = generate_name()
-            scipy.misc.imsave(join(args.output_dir, root + '_' + name + OUTPUT_EXTENSION), img)
-            scipy.misc.imsave(join(args.output_dir, root + '_' + name + 'l' + OUTPUT_EXTENSION), label)
+            cv2.imwrite(join(args.output_dir, root + '_' + name + OUTPUT_EXTENSION), img)
+            cv2.imwrite(join(args.output_dir, root + '_' + name + 'l' + OUTPUT_EXTENSION), label)
 
 def process_unlabeled(input_img_path):
     print('Processing', input_img_path)
 
-    img = scipy.misc.imread(input_img_path)
+    img = cv2.imread(input_img_path)
     if img is None:
         return
 
@@ -145,9 +145,9 @@ def process_unlabeled(input_img_path):
         )
 
         for patch in patches:
-            scipy.misc.imsave(join(args.output_dir, root + '_' + generate_name() + OUTPUT_EXTENSION), patch)
+            cv2.imwrite(join(args.output_dir, root + '_' + generate_name() + OUTPUT_EXTENSION), patch)
     else:
-        scipy.misc.imsave(join(args.output_dir, root + OUTPUT_EXTENSION), sky)
+        cv2.imwrite(join(args.output_dir, root + OUTPUT_EXTENSION), sky)
 
 def take(l, n):
     for i in range(n):
