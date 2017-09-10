@@ -32,6 +32,9 @@ class NeuralNetwork:
 
         self.image = tf.get_default_graph().get_operation_by_name('image').outputs[0]
         self.label = tf.get_default_graph().get_operation_by_name('label').outputs[0]
+
+        self.dropout_probability = tf.get_default_graph().get_operation_by_name('dropout_probability').outputs[0]
+
         self.output = tf.get_default_graph().get_operation_by_name('output').outputs[0]
 
         self.loss = tf.get_collection('loss')[0]
@@ -44,7 +47,7 @@ class NeuralNetwork:
         self.image = tf.placeholder(tf.float32, [None, image_shape[0], image_shape[1], image_shape[2]], name = 'image')
         self.label = tf.placeholder(tf.float32, [None, label_shape[0], label_shape[1], label_shape[2]], name = 'label')
 
-        dropout_probability = tf.placeholder_with_default(1.0, shape = (), name = 'dropout_probability')
+        self.dropout_probability = tf.placeholder_with_default(1.0, shape = (), name = 'dropout_probability')
 
         layer = self.image
         layer = tf.layers.conv2d(layer, 64, (5, 5), padding = 'SAME', activation = tf.nn.relu, name = 'conv0')
@@ -56,15 +59,15 @@ class NeuralNetwork:
         start0 = layer
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool2')
         layer = tf.layers.conv2d(layer, 192, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv4')
-        layer = tf.layers.dropout(layer, rate = dropout_probability, name = 'drop0')
+        layer = tf.layers.dropout(layer, rate = self.dropout_probability, name = 'drop0')
         start1 = layer
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool3')
         layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv5')
-        layer = tf.layers.dropout(layer, rate = dropout_probability, name = 'drop1')
+        layer = tf.layers.dropout(layer, rate = self.dropout_probability, name = 'drop1')
         layer = tf.image.resize_nearest_neighbor(layer, size = (label_shape[0] // 2, label_shape[1] // 2), name='upsample0')
         end1 = layer
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv6')
-        layer = tf.layers.dropout(layer, rate = dropout_probability, name = 'drop2')
+        layer = tf.layers.dropout(layer, rate = self.dropout_probability, name = 'drop2')
         layer = tf.image.resize_nearest_neighbor(layer, size = label_shape[0:2], name='upsample1')
         end0 = layer
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv7')
@@ -135,10 +138,8 @@ class NeuralNetwork:
             for batch in tqdm(range(training_batches_per_epoch)):
                 batch_images, batch_labels = self._load_batch(training_paths, batch, batch_size)
 
-                dropout_probability = tf.get_default_graph().get_operation_by_name('dropout_probability').outputs[0]
-
                 variables = [ self.loss, self.train_step, self.training_loss_summary,  ]
-                feed_dict = { self.image : batch_images, self.label : batch_labels, dropout_probability : 0.25 }
+                feed_dict = { self.image : batch_images, self.label : batch_labels, self.dropout_probability : 0.25 }
                 loss, _, loss_summary = self.session.run(variables, feed_dict = feed_dict)
 
                 step = epoch * training_batches_per_epoch + batch
