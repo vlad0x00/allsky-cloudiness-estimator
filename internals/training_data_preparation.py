@@ -8,12 +8,12 @@ import scipy.misc
 from multiprocessing.pool import ThreadPool
 from os.path import join, splitext, basename
 from os import makedirs, walk
-from .utils.labeling import is_label, remove_label, add_label, normalize
-from .utils.fixes import fix_dead_pixels
-from .utils.sky_extractor import extract_sky
-from .utils.data_generator import generate_data
-from .utils.name_generator import generate_name
-from .utils.patching import extract_patches
+from utils.labeling import is_label, remove_label, add_label, normalize
+from utils.fixes import fix_dead_pixels
+from utils.sky_extractor import extract_sky
+from utils.data_generator import generate_data
+from utils.name_generator import generate_name
+from utils.patching import extract_patches
 
 IMG_RESIZE = 512
 IMG_PATCH_SIZE = 256

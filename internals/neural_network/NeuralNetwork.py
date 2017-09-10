@@ -7,8 +7,8 @@ import math
 from tqdm import tqdm
 
 VALIDATION_PERCENT = 0.1
-LOG_DIR = './logs/'
-MODEL_FILENAME = os.path.dirname(os.path.abspath(__file__)) + '/../model/network_model'
+LOG_DIR = os.path.dirname(os.path.abspath(__file__))  + '/logs/'
+MODEL_FILENAME = os.path.dirname(os.path.abspath(__file__)) + '/model/network_model'
 LEARNING_RATE = 0.001
 
 class NeuralNetwork:
@@ -44,6 +44,8 @@ class NeuralNetwork:
         self.image = tf.placeholder(tf.float32, [None, image_shape[0], image_shape[1], image_shape[2]], name = 'image')
         self.label = tf.placeholder(tf.float32, [None, label_shape[0], label_shape[1], label_shape[2]], name = 'label')
 
+        dropout_probability = tf.placeholder_with_default(1.0, shape = (), name = 'dropout_probability')
+
         layer = self.image
         layer = tf.layers.conv2d(layer, 64, (5, 5), padding = 'SAME', activation = tf.nn.relu, name = 'conv0')
         layer = tf.layers.conv2d(layer, 64, (5, 5), padding = 'SAME', activation = tf.nn.relu, name = 'conv1')
@@ -54,15 +56,15 @@ class NeuralNetwork:
         start0 = layer
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool2')
         layer = tf.layers.conv2d(layer, 192, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv4')
-        layer = tf.layers.dropout(layer, rate = 0.25, name = 'drop0')
+        layer = tf.layers.dropout(layer, rate = dropout_probability, name = 'drop0')
         start1 = layer
         layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool3')
         layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv5')
-        layer = tf.layers.dropout(layer, rate = 0.25, name = 'drop1')
+        layer = tf.layers.dropout(layer, rate = dropout_probability, name = 'drop1')
         layer = tf.image.resize_nearest_neighbor(layer, size = (label_shape[0] // 2, label_shape[1] // 2), name='upsample0')
         end1 = layer
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv6')
-        layer = tf.layers.dropout(layer, rate = 0.25, name = 'drop2')
+        layer = tf.layers.dropout(layer, rate = dropout_probability, name = 'drop2')
         layer = tf.image.resize_nearest_neighbor(layer, size = label_shape[0:2], name='upsample1')
         end0 = layer
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv7')
@@ -133,8 +135,10 @@ class NeuralNetwork:
             for batch in tqdm(range(training_batches_per_epoch)):
                 batch_images, batch_labels = self._load_batch(training_paths, batch, batch_size)
 
-                variables = [ self.loss, self.train_step, self.training_loss_summary ]
-                feed_dict = { self.image : batch_images, self.label : batch_labels }
+                dropout_probability = tf.get_default_graph().get_operation_by_name('dropout_probability').outputs[0]
+
+                variables = [ self.loss, self.train_step, self.training_loss_summary,  ]
+                feed_dict = { self.image : batch_images, self.label : batch_labels, dropout_probability : 0.25 }
                 loss, _, loss_summary = self.session.run(variables, feed_dict = feed_dict)
 
                 step = epoch * training_batches_per_epoch + batch
@@ -173,25 +177,26 @@ class NeuralNetwork:
         print('NeuralNetwork: Training done')
 
     def _load_batch(self, paths, batch, batch_size):
-            start = batch * batch_size
-            end = start + batch_size
-            if end > len(paths):
-                end = len(paths)
+        start = batch * batch_size
+        end = start + batch_size
+        if end > len(paths):
+            end = len(paths)
 
-            images = []
-            labels = []
+        images = []
+        labels = []
 
-            for idx in range(start, end):
-                image = scipy.misc.imread(paths[idx][0])
-                image = np.divide(image, 255)
-                images.append(image)
+        for idx in range(start, end):
+            image = scipy.misc.imread(paths[idx][0])
+            image = image[:, :, ::-1] # BGR -> RGB
+            image = np.divide(image, 255)
+            images.append(image)
 
-                label = scipy.misc.imread(paths[idx][1], flatten = True)
-                label = np.reshape(label, (label.shape[0], label.shape[1], 1))
-                label = np.divide(label, 255)
-                labels.append(label)
+            label = scipy.misc.imread(paths[idx][1], flatten = True)
+            label = np.reshape(label, (label.shape[0], label.shape[1], 1))
+            label = np.divide(label, 255)
+            labels.append(label)
 
-            return images, labels
+        return images, labels
 
     def _split_training_and_validation(self, image_and_label_paths):
         training = []

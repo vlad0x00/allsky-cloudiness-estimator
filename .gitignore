@@ -1,5 +1,5 @@
 internals/labeled_images/
 internals/unlabeled_images/
 internals/processed_images/
-internals/logs/
+internals/neural_network/logs/
 __pycache__

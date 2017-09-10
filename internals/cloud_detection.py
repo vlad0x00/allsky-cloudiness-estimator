@@ -1,12 +1,11 @@
 from .utils.coordinates_helper import get_image_coordinates, get_horizontal_coordinates
 from .neural_network.NeuralNetwork import NeuralNetwork
-from PIL import Image
 from datetime import datetime
 from matplotlib import path
 import scipy.misc
 import os
-import cv2
 import numpy as np
+from PIL import Image
 from .utils.sky_extractor import extract_sky
 from .utils.fixes import fix_dead_pixels
 
@@ -15,53 +14,62 @@ ORIGINAL_HEIGHT = 3456
 CROP_SIZE = 2300
 NETWORK_INPUT_SIZE = 512
 NETWORK_OUTPUT_SIZE = 128
+BATCH_SIZE = 1
 
-def estimate_cloudiness(images, coordinates):
+def process_images(images):
     processed_images = []
 
     for image in images:
-        processed_images.append(extract_sky(fix_dead_pixels(image), NETWORK_INPUT_SIZE))
-        
-    nn = NeuralNetwork()
-    cloud_outputs = nn.run(processed_images)
-    nn.close()
+        processed = fix_dead_pixels(image)
+        processed = extract_sky(processed, NETWORK_INPUT_SIZE)
+        processed = np.divide(processed, 255)
+        processed_images.append(processed)
 
-    processed_outputs = []
-    for i in range(cloud_outputs[0].shape[0]):
-        cloud_output = cloud_outputs[0][i]
+    return processed_images
 
-        cloud_output = np.reshape(cloud_output, (NETWORK_OUTPUT_SIZE, NETWORK_OUTPUT_SIZE, 1))
-        cloud_output = np.multiply(cloud_output, 255)
-        cloud_output = np.stack([ cloud_output, np.copy(cloud_output), np.copy(cloud_output) ], axis = -1)
-        cloud_output = np.reshape(cloud_output, (NETWORK_OUTPUT_SIZE, NETWORK_OUTPUT_SIZE, 3))
-        cloud_output = scipy.misc.imresize(cloud_output, (CROP_SIZE, CROP_SIZE), interp = 'bicubic')
-        cloud_output = np.divide(cloud_output, 255)
-
-        processed_outputs.append(cloud_output)
+def estimate_cloudiness(image_paths, coordinates):
+    percentages = []
 
     for i in range(len(coordinates)):
         coordinates[i] = (
-                            coordinates[i][0] - (ORIGINAL_WIDTH - CROP_SIZE) // 2,
-                            coordinates[i][1] - (ORIGINAL_HEIGHT - CROP_SIZE) // 2
+                            (coordinates[i][0] - (ORIGINAL_WIDTH - CROP_SIZE) // 2)
+                            // (CROP_SIZE // NETWORK_OUTPUT_SIZE),
+                            (coordinates[i][1] - (ORIGINAL_HEIGHT - CROP_SIZE) // 2)
+                            // (CROP_SIZE // NETWORK_OUTPUT_SIZE)
         )
-
     polygon = path.Path(coordinates)
 
-    percentages = []
-    for cloud_output in processed_outputs:
-        points_inside = 0
-        cloudiness = 0
-        for y in range(cloud_output.shape[0]):
-            for x in range(cloud_output.shape[1]):
-                if polygon.contains_point((x, y)):
-                    cloudiness += cloud_output[x, y, 0]
-                    points_inside += 1
+    neural_network = NeuralNetwork()
+    for i in range(0, len(image_paths), BATCH_SIZE):
+        images = []
+        for j in range(BATCH_SIZE):
+            if i + j >= len(image_paths):
+                break
+            image = scipy.misc.imread(image_paths[i + j])
+            image = np.array(image[:, :, ::-1])
+            images.append(image)
 
-        if points_inside > 0:
-            percentages.append(cloudiness / points_inside)
-        else:
-            # TODO: Handle this as error
-            percentages.append(0)
+        processed_images = process_images(images)
+        cloud_outputs = neural_network.run(processed_images)
+
+        import cv2
+
+        for cloud_output in cloud_outputs[0]:
+            points_inside = 0
+            cloudiness = 0
+            for y in range(cloud_output.shape[0]):
+                for x in range(cloud_output.shape[1]):
+                    if polygon.contains_point((x, y)):
+                        cloudiness += cloud_output[x, y, 0]
+                        points_inside += 1
+
+            if points_inside > 0:
+                percentages.append(cloudiness / points_inside)
+            else:
+                # TODO: Handle this as error
+                percentages.append(0)
+
+    neural_network.close()
 
     return percentages
 
@@ -85,18 +93,9 @@ def get_image_paths(images_dir, start_datetime, end_datetime):
     return paths, datetimes
 
 def get_cloudiness_percentages(start_date, end_date, center_of_view, field_of_view, rotation, images_dir):
-    paths, datetimes = get_image_paths(images_dir, start_date, end_date)
+    image_paths, datetimes = get_image_paths(images_dir, start_date, end_date)
     horizontal_coordinates = get_horizontal_coordinates(center_of_view, field_of_view, rotation)
     image_coordinates = get_image_coordinates(horizontal_coordinates)
-
-    percentages = []
-    for i in range(0, len(paths), 4):
-        images = []
-        for j in range(4):
-            if i + j >= len(paths):
-                break
-            images.append(scipy.misc.imread(paths[i + j]))
-
-        percentages += estimate_cloudiness(images, image_coordinates)
+    percentages = estimate_cloudiness(image_paths, image_coordinates)
 
     return datetimes, percentages
