@@ -3,12 +3,14 @@ from .neural_network.NeuralNetwork import NeuralNetwork
 from datetime import datetime
 from matplotlib import path
 import scipy.misc
-import os
 import numpy as np
 from PIL import Image
 from .utils.sky_extractor import extract_sky
 from .utils.fixes import fix_dead_pixels
+from os import walk
+from os.path import join, splitext
 
+IMAGES_EXT = '.jpg'
 ORIGINAL_WIDTH = 5184
 ORIGINAL_HEIGHT = 3456
 CROP_SIZE = 2300
@@ -16,16 +18,16 @@ NETWORK_INPUT_SIZE = 512
 NETWORK_OUTPUT_SIZE = 128
 BATCH_SIZE = 1
 
-def process_images(images):
-    processed_images = []
+def preprocess_images(images):
+    preprocessed_images = []
 
     for image in images:
-        processed = fix_dead_pixels(image)
-        processed = extract_sky(processed, NETWORK_INPUT_SIZE)
-        processed = np.divide(processed, 255)
-        processed_images.append(processed)
+        preprocessed = fix_dead_pixels(image)
+        preprocessed = extract_sky(preprocessed, NETWORK_INPUT_SIZE)
+        preprocessed = np.divide(preprocessed, 255)
+        preprocessed_images.append(preprocessed)
 
-    return processed_images
+    return preprocessed_images
 
 def estimate_cloudiness(image_paths, coordinates):
     percentages = []
@@ -49,8 +51,8 @@ def estimate_cloudiness(image_paths, coordinates):
             image = np.array(image[:, :, ::-1]) # BGR -> RGB
             images.append(image)
 
-        processed_images = process_images(images)
-        cloud_outputs = neural_network.run(processed_images)
+        preprocessed_images = preprocess_images(images)
+        cloud_outputs = neural_network.run(preprocessed_images)
 
         for cloud_output in cloud_outputs[0]:
             points_inside = 0
@@ -64,21 +66,23 @@ def estimate_cloudiness(image_paths, coordinates):
             if points_inside > 0:
                 percentages.append(cloudiness / points_inside)
             else:
-                # TODO: Handle this as error
-                percentages.append(0)
-
+                print('ERROR: Invalid coordinates or image')
+                percentages.append(-1)
     neural_network.close()
 
     return percentages
 
 def get_image_paths(images_dir, start_datetime, end_datetime):
     paths_and_datetimes = []
-    for dirpath, dirnames, filenames in os.walk(images_dir):
+    for dirpath, dirnames, filenames in walk(images_dir):
         for filename in filenames:
-            path = os.path.join(dirpath, filename)
-            image_datetime = datetime.strptime(Image.open(path)._getexif()[36867], '%Y:%m:%d %H:%M:%S')
-            if start_datetime <= image_datetime and image_datetime <= end_datetime:
-                paths_and_datetimes.append((path, image_datetime))
+            root, ext = splitext(filename)
+
+            if ext.lower() == IMAGES_EXT:
+                path = join(dirpath, filename)
+                image_datetime = datetime.strptime(Image.open(path)._getexif()[36867], '%Y:%m:%d %H:%M:%S')
+                if start_datetime <= image_datetime and image_datetime <= end_datetime:
+                    paths_and_datetimes.append((path, image_datetime))
 
     paths_and_datetimes = sorted(paths_and_datetimes, key = lambda x : x[1])
 
