@@ -2,7 +2,7 @@
 This project is a work in progress, but the following is planned:
 
 A cloudiness estimator for allsky camera images. The project was originally started for Petnica Meteor Group that sought to automate the manual process of estimating
-cloudiness in night allsky camera images for the purposes of calculating Zenithal Hourly Rate.
+cloudiness in allsky camera night images for the purposes of calculating Zenithal Hourly Rate.
 
 Given a timeframe, field of view of the sky, and allsky camera images, the program will print a table with cloudiness percentages as it changes over the time.
 
