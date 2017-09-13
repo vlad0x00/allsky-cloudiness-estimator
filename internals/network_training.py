@@ -7,9 +7,9 @@ from neural_network.NeuralNetwork import NeuralNetwork
 from utils.labeling import is_label, remove_label
 
 parser = argparse.ArgumentParser()
-parser.add_argument('image_dir', help = 'Directory with train images and their labels')
-parser.add_argument('-b', '--batchsize', help = 'Number of images per batch', default = 1)
-parser.add_argument('-e', '--epochs', help = 'Number of epochs to train', default = 1)
+parser.add_argument('image_dir', help='Directory with train images and their labels')
+parser.add_argument('-b', '--batchsize', help='Number of images per batch', default=1)
+parser.add_argument('-e', '--epochs', help='Number of epochs to train', default=1)
 args = parser.parse_args()
 
 image_dir = args.image_dir

@@ -8,7 +8,8 @@ datetimes, percentages = get_cloudiness_percentages(
                             datetime(2017, 4, 13),
                             datetime(2017, 4, 14),
                             0, 0, 0,
-                            'internals/unlabeled_images'
+                            'internals/unlabeled_images',
+                            True
                         )
 
 for i in range(len(percentages)):

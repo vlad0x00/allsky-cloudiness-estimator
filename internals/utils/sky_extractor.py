@@ -16,9 +16,9 @@ def resize(img, new_size, is_label):
         method = cv2.INTER_NEAREST
     else:
         method = cv2.INTER_AREA
-    return cv2.resize(img, dsize = (new_size, new_size), interpolation = method)
+    return cv2.resize(img, dsize=(new_size, new_size), interpolation=method)
 
-def extract_sky(img, final_size, is_label = False):
+def extract_sky(img, final_size, is_label=False):
     img = crop(img, CROP_SIZE, BORDER_RADIUS, BORDER_SIZE)
     img = resize(img, final_size, is_label)
     return img

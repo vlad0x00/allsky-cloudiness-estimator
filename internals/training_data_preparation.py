@@ -30,11 +30,11 @@ assert IMG_STRIDES == LABEL_STRIDES
 OUTPUT_EXTENSION = '.png'
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input_dir', help = 'Directory from which the raw images and their labels are loaded')
-parser.add_argument('output_dir', help = 'Directory to which the output images are stored')
-parser.add_argument('-p', '--patching', help = 'Enable the patching method', action = 'store_true')
-parser.add_argument('-l', '--limit', help = 'Limit the number of inputs to process', default = -1)
-parser.add_argument('-u', '--unlabeled', help = 'Prepare inputs without labels to test the network (less processing)', action = 'store_true')
+parser.add_argument('input_dir', help='Directory from which the raw images and their labels are loaded')
+parser.add_argument('output_dir', help='Directory to which the output images are stored')
+parser.add_argument('-p', '--patching', help='Enable the patching method', action='store_true')
+parser.add_argument('-l', '--limit', help='Limit the number of inputs to process', default=-1)
+parser.add_argument('-u', '--unlabeled', help='Prepare inputs without labels to test the network (less processing)', action='store_true')
 args = parser.parse_args()
 
 input_dir = args.input_dir

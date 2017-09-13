@@ -44,39 +44,39 @@ class NeuralNetwork:
         self.writer.add_graph(tf.get_default_graph())
 
     def _create_model(self, image_shape, label_shape):
-        self.image = tf.placeholder(tf.float32, [None, image_shape[0], image_shape[1], image_shape[2]], name = 'image')
-        self.label = tf.placeholder(tf.float32, [None, label_shape[0], label_shape[1], label_shape[2]], name = 'label')
+        self.image = tf.placeholder(tf.float32, [None, image_shape[0], image_shape[1], image_shape[2]], name='image')
+        self.label = tf.placeholder(tf.float32, [None, label_shape[0], label_shape[1], label_shape[2]], name='label')
 
-        self.dropout_probability = tf.placeholder_with_default(1.0, shape = (), name = 'dropout_probability')
+        self.dropout_probability = tf.placeholder_with_default(1.0, shape=(), name='dropout_probability')
 
         layer = self.image
-        layer = tf.layers.conv2d(layer, 64, (5, 5), padding = 'SAME', activation = tf.nn.relu, name = 'conv0')
-        layer = tf.layers.conv2d(layer, 64, (5, 5), padding = 'SAME', activation = tf.nn.relu, name = 'conv1')
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool0')
-        layer = tf.layers.conv2d(layer, 96, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv2')
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool1')
-        layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name = 'conv3')
+        layer = tf.layers.conv2d(layer, 64, (5, 5), padding='SAME', activation=tf.nn.relu, name='conv0')
+        layer = tf.layers.conv2d(layer, 64, (5, 5), padding='SAME', activation=tf.nn.relu, name='conv1')
+        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding='SAME', name='maxpool0')
+        layer = tf.layers.conv2d(layer, 96, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv2')
+        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding='SAME', name='maxpool1')
+        layer = tf.layers.conv2d(layer, 128, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv3')
         start0 = layer
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool2')
-        layer = tf.layers.conv2d(layer, 192, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv4')
-        layer = tf.layers.dropout(layer, rate = self.dropout_probability, name = 'drop0')
+        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding='SAME', name='maxpool2')
+        layer = tf.layers.conv2d(layer, 192, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv4')
+        layer = tf.layers.dropout(layer, rate=self.dropout_probability, name='drop0')
         start1 = layer
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding = 'SAME', name = 'maxpool3')
-        layer = tf.layers.conv2d(layer, 256, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv5')
-        layer = tf.layers.dropout(layer, rate = self.dropout_probability, name = 'drop1')
-        layer = tf.image.resize_nearest_neighbor(layer, size = (label_shape[0] // 2, label_shape[1] // 2), name='upsample0')
+        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding='SAME', name='maxpool3')
+        layer = tf.layers.conv2d(layer, 256, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv5')
+        layer = tf.layers.dropout(layer, rate=self.dropout_probability, name='drop1')
+        layer = tf.image.resize_nearest_neighbor(layer, size=(label_shape[0] // 2, label_shape[1] // 2), name='upsample0')
         end1 = layer
-        layer = tf.layers.conv2d(layer, 128, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv6')
-        layer = tf.layers.dropout(layer, rate = self.dropout_probability, name = 'drop2')
-        layer = tf.image.resize_nearest_neighbor(layer, size = label_shape[0:2], name='upsample1')
+        layer = tf.layers.conv2d(layer, 128, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv6')
+        layer = tf.layers.dropout(layer, rate=self.dropout_probability, name='drop2')
+        layer = tf.image.resize_nearest_neighbor(layer, size=label_shape[0:2], name='upsample1')
         end0 = layer
-        layer = tf.layers.conv2d(layer, 64, (3, 3), padding = 'SAME', activation = tf.nn.relu, name ='conv7')
-        layer = tf.layers.conv2d(layer, label_shape[2], (3, 3), padding = 'SAME', activation = tf.sigmoid, name = 'conv8')
+        layer = tf.layers.conv2d(layer, 64, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv7')
+        layer = tf.layers.conv2d(layer, label_shape[2], (3, 3), padding='SAME', activation=tf.sigmoid, name='conv8')
 
         concat0 = tf.concat([start0, end0], 3, 'concat0')
         concat1 = tf.concat([start1, end1], 3, 'concat1')
 
-        self.output = tf.identity(layer, name = 'output')
+        self.output = tf.identity(layer, name='output')
 
         self._setup_loss()
         self._setup_optimizer()
@@ -91,8 +91,8 @@ class NeuralNetwork:
         #flat_logits = tf.reshape(tensor = self.output, shape = (-1, int(self.output.shape[3])))
         #flat_labels = tf.reshape(tensor = self.label, shape = (-1, int(self.label.shape[3])))
 
-        #cross_entropies = tf.nn.softmax_cross_entropy_with_logits(logits = flat_logits,
-        #                                                          labels = flat_labels)
+        #cross_entropies = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
+        #                                                          labels=flat_labels)
 
         self.loss = tf.losses.mean_squared_error(self.label, self.output)
         tf.add_to_collection('loss', self.loss)
@@ -117,7 +117,7 @@ class NeuralNetwork:
         if not self.model_loaded:
             print('NeuralNetwork: No model exists, creating one...')
             test_image = scipy.misc.imread(image_and_label_paths[0][0])
-            test_label = scipy.misc.imread(image_and_label_paths[0][1], flatten = True)
+            test_label = scipy.misc.imread(image_and_label_paths[0][1], flatten=True)
             test_label = np.reshape(test_label, (test_label.shape[0], test_label.shape[1], 1))
             self._create_model(test_image.shape, test_label.shape)
             print('NeuralNetwork: Model successfully created')
@@ -140,7 +140,7 @@ class NeuralNetwork:
 
                 variables = [ self.loss, self.train_step, self.training_loss_summary,  ]
                 feed_dict = { self.image : batch_images, self.label : batch_labels, self.dropout_probability : 0.25 }
-                loss, _, loss_summary = self.session.run(variables, feed_dict = feed_dict)
+                loss, _, loss_summary = self.session.run(variables, feed_dict=feed_dict)
 
                 step = epoch * training_batches_per_epoch + batch
                 self.writer.add_summary(loss_summary, step)
@@ -157,7 +157,7 @@ class NeuralNetwork:
                                 self.image_summary, self.label_summary, self.output_summary ]
                 feed_dict = { self.image : batch_images, self.label : batch_labels }
                 loss, loss_summary, image_summary, label_summary, output_summary = self.session.run(
-                                                                    variables, feed_dict = feed_dict)
+                                                                    variables, feed_dict=feed_dict)
 
                 step = epoch * validation_batches_per_epoch + batch
                 self.writer.add_summary(loss_summary, step)
@@ -192,7 +192,7 @@ class NeuralNetwork:
             image = np.divide(image, 255)
             images.append(image)
 
-            label = scipy.misc.imread(paths[idx][1], flatten = True)
+            label = scipy.misc.imread(paths[idx][1], flatten=True)
             label = np.reshape(label, (label.shape[0], label.shape[1], 1))
             label = np.divide(label, 255)
             labels.append(label)
@@ -218,7 +218,7 @@ class NeuralNetwork:
 
         variables = [ self.output ]
         feed_dict = { self.image : images }
-        outputs = self.session.run(variables, feed_dict = feed_dict)
+        outputs = self.session.run(variables, feed_dict=feed_dict)
 
         return outputs
 

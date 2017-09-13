@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from math import sqrt
 
-def extract_patches(img, patch_size, stride, padding = 0):
+def extract_patches(img, patch_size, stride, padding=0):
     size, _, _ = img.shape
 
     kernel_size = patch_size + 2 * padding
@@ -20,14 +20,14 @@ def extract_patches(img, patch_size, stride, padding = 0):
 
     return patches
 
-def stitch_patches(patches, patch_size, stride, padding = 0):
+def stitch_patches(patches, patch_size, stride, padding=0):
     kernel_size = patch_size + 2 * padding
     axis_total_strides = round(sqrt(len(patches)))
 
     size = round(sqrt(len(patches)) * stride - stride + kernel_size)
 
-    img = np.zeros((size, size, patches[0].shape[2]), dtype = np.uint32)
-    patch_counters = np.zeros((size, size, patches[0].shape[2]), dtype = np.uint32)
+    img = np.zeros((size, size, patches[0].shape[2]), dtype=np.uint32)
+    patch_counters = np.zeros((size, size, patches[0].shape[2]), dtype=np.uint32)
 
     i = 0
     for x in range(axis_total_strides):
