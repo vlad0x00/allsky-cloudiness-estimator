@@ -5,9 +5,9 @@ from datetime import datetime
 
 # TODO: Use GUI
 datetimes, percentages = get_cloudiness_percentages(
-                            datetime(2017, 4, 13),
+                            datetime(2016, 4, 13),
                             datetime(2017, 4, 14),
-                            0, 0, 0,
+                            (45, 45), 45, 15,
                             'internals/unlabeled_images',
                             True
                         )

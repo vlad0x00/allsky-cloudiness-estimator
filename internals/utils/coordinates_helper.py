@@ -7,7 +7,7 @@ ORIGINAL_HEIGHT = 3456
 IMAGE_CENTER_X = ORIGINAL_WIDTH / 2
 IMAGE_CENTER_Y = ORIGINAL_HEIGHT / 2
 
-def get_image_coordinates(horizontal_coordinates):
+def horizontal2pixel(horizontal_coordinates):
     coordinates_file = open(COORDINATES_FILE)
 
     file_coordinates = []
@@ -24,6 +24,9 @@ def get_image_coordinates(horizontal_coordinates):
         x -= IMAGE_CENTER_X
         y -= IMAGE_CENTER_Y
 
+        if x < 10 and y < 10:
+            continue
+
         angle = degrees(atan2(-y, x)) - azimuth
         while angle < -180:
             angle += 360
@@ -35,12 +38,13 @@ def get_image_coordinates(horizontal_coordinates):
     for horizontal in horizontal_coordinates:
         azimuth = horizontal[0]
         height = horizontal[1]
+
         for i in range(len(file_coordinates) - 1):
             x_low, y_low, azimuth_low, height_low = file_coordinates[i]
             x_high, y_high, azimuth_high, height_high = file_coordinates[i + 1]
             if height_low <= height and height <= height_high:
                 distance_low = sqrt((IMAGE_CENTER_X - x_low) ** 2 + (IMAGE_CENTER_Y - y_low) ** 2)
-                distance_high = sqrt((IMAGE_CENTER_X - x_high) ** 2 + (IMAGE_CENTER_Y - y_low) ** 2)
+                distance_high = sqrt((IMAGE_CENTER_X - x_high) ** 2 + (IMAGE_CENTER_Y - y_high) ** 2)
 
                 if height_low != height_high:
                     distance_factor = (height - height_low) / (height_high - height_low)
@@ -56,11 +60,11 @@ def get_image_coordinates(horizontal_coordinates):
 
     return image_coordinates
 
-def get_horizontal_coordinates(center_of_view, field_of_view, rotation):
+def view2pixel(center_of_view, field_of_view, rotation):
     # This is some real Savan magic
-    '''
-    delta_azimuth = atan(tan(radians(field_of_view / 2)) * cos(radians(rotation)))
-    delta_zenithal = asin(sin(radians(field_of_view / 2)) * sin(radians(rotation)))
+
+    delta_azimuth = degrees(atan(tan(radians(field_of_view / 2)) * cos(radians(rotation))))
+    delta_zenithal = degrees(asin(sin(radians(field_of_view / 2)) * sin(radians(rotation))))
 
     # p and q are projections of center_of_view to field of view sides
     p = (center_of_view[0] - delta_azimuth, center_of_view[1] - delta_zenithal)
@@ -70,21 +74,21 @@ def get_horizontal_coordinates(center_of_view, field_of_view, rotation):
     ps = (center_of_view[0] - delta_azimuth, center_of_view[1])
     qs = (center_of_view[0] + delta_azimuth, center_of_view[1])
 
-    helper_coordinates = get_image_coordinates([ P, Q, PS, QS ])
+    helper_coordinates = horizontal2pixel([ p, ps, q, qs ])
 
     p_xy = helper_coordinates[0]
-    q_xy = helper_coordinates[1]
-    ps_xy = helper_coordinates[2]
+    ps_xy = helper_coordinates[1]
+    q_xy = helper_coordinates[2]
     qs_xy = helper_coordinates[3]
 
     # angle between p and ps, and q and qs respectively
-    p_angle = atan2(ps_xy[1] - p_xy[1], ps_xy[0] - p_xy[0])
-    q_angle = atan2(qs_xy[1] - q_xy[1], qs_xy[0] - q_xy[0])
+    p_angle = degrees(atan2(ps_xy[1] - p_xy[1], ps_xy[0] - p_xy[0]))
+    q_angle = degrees(atan2(qs_xy[1] - q_xy[1], qs_xy[0] - q_xy[0]))
 
-    dx = p_xy[0] - ps_xy[0]
-    dy = p_xy[1] - ps_xy[1]
+    dx = p_xy[0] - q_xy[0]
+    dy = p_xy[1] - q_xy[1]
     width = round(sqrt(dx ** 2 + dy ** 2))
-    height = width * 3 // 4
+    height = round(width * 3 / 4)
 
     x = round(p_xy[0] + height / 2 * cos(radians(p_angle)))
     y = round(p_xy[1] + height / 2 * sin(radians(p_angle)))
@@ -103,6 +107,3 @@ def get_horizontal_coordinates(center_of_view, field_of_view, rotation):
     bottom_right = (x, y)
 
     return [ bottom_left, top_left, top_right, bottom_right ]
-    '''
-
-    return [ (44, 10), (46, 10), (46, 70), (44, 70) ]
