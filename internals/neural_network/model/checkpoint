@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/e1427251/allsky-cloud-detector/internals/neural_network/model/network_model"
+all_model_checkpoint_paths: "/home/e1427251/allsky-cloud-detector/internals/neural_network/model/network_model"
