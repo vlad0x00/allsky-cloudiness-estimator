@@ -74,7 +74,16 @@ def view2pixel(center_of_view, field_of_view, rotation):
     ps = (center_of_view[0] - delta_azimuth, center_of_view[1])
     qs = (center_of_view[0] + delta_azimuth, center_of_view[1])
 
-    helper_coordinates = horizontal2pixel([ p, ps, q, qs ])
+    coordinates = [ p, ps, q, qs]
+    for i in range(len(coordinates)):
+        if coordinates[i][1] > 90:
+            azimuth = coordinates[i][0] + 180
+            if azimuth > 360:
+                azimuth -= 360
+            height = 180 - coordinates[i][1]
+            coordinates[i] = (azimuth, height)
+
+    helper_coordinates = horizontal2pixel(coordinates)
 
     p_xy = helper_coordinates[0]
     ps_xy = helper_coordinates[1]
@@ -90,20 +99,37 @@ def view2pixel(center_of_view, field_of_view, rotation):
     width = round(sqrt(dx ** 2 + dy ** 2))
     height = round(width * 3 / 4)
 
+    coordinates = []
+
     x = round(p_xy[0] + height / 2 * cos(radians(p_angle)))
     y = round(p_xy[1] + height / 2 * sin(radians(p_angle)))
-    bottom_left = (x, y)
+    coordinates.append((x, y))
 
     x = round(p_xy[0] + height / 2 * cos(radians(p_angle + 180)))
     y = round(p_xy[1] + height / 2 * sin(radians(p_angle + 180)))
-    top_left = (x, y)
+    coordinates.append((x, y))
 
     x = round(q_xy[0] + height / 2 * cos(radians(q_angle)))
     y = round(q_xy[1] + height / 2 * sin(radians(q_angle)))
-    top_right = (x, y)
+    coordinates.append((x, y))
 
     x = round(q_xy[0] + height / 2 * cos(radians(q_angle + 180)))
     y = round(q_xy[1] + height / 2 * sin(radians(q_angle + 180)))
-    bottom_right = (x, y)
+    coordinates.append((x, y))
 
-    return [ bottom_left, top_left, top_right, bottom_right ]
+    center = (0, 0)
+    for x, y in coordinates:
+        center = (center[0] + x, center[1] + y)
+    center = (center[0] / len(coordinates), center[1] / len(coordinates))
+
+    coordinates_and_angles = []
+    for x, y in coordinates:
+        angle = degrees(atan2(y - center[1], x - center[0]))
+        coordinates_and_angles.append((x, y, angle))
+    coordinates_and_angles = sorted(coordinates_and_angles, key=lambda x : x[2])
+
+    coordinates = []
+    for x, y, _ in coordinates_and_angles:
+        coordinates.append((x, y))
+
+    return coordinates

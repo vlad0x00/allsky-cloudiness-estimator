@@ -53,9 +53,7 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
     output_polygon = path.Path(output_coordinates)
 
     neural_network = NeuralNetwork()
-    ee = 0
     for i in range(0, len(image_paths), BATCH_SIZE):
-        ee += 1
         images = []
         for j in range(BATCH_SIZE):
             if i + j >= len(image_paths):
@@ -73,7 +71,7 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
             for y in range(cloud_output.shape[0]):
                 for x in range(cloud_output.shape[1]):
                     if output_polygon.contains_point((x, y)):
-                        cloudiness += cloud_output[x, y, 0] ** 2
+                        cloudiness += cloud_output[y, x, 0]
                         points_inside += 1
 
             if points_inside > 0:
@@ -100,6 +98,7 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
                 output = np.stack([output, output.copy(), output.copy()], axis = -1)
                 output = np.reshape(output, (output.shape[1], output.shape[0], 3))
                 output = scipy.misc.imresize(output, (NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE), interp='bicubic')
+                output = np.divide(output, 255)
 
                 subplot = plt.subplot(122)
                 plt.imshow(output)
