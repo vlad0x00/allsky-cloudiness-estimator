@@ -17,7 +17,6 @@ class NeuralNetwork:
     def __init__(self):
         tf.reset_default_graph()
         self.session = tf.Session()
-        self.writer = tf.summary.FileWriter(LOG_DIR)
 
         if os.path.isfile(MODEL_FILENAME + '.meta'):
             print('NeuralNetwork: Model file exists, loading...')
@@ -41,8 +40,6 @@ class NeuralNetwork:
         self.loss = tf.get_collection('loss')[0]
         self.train_step = tf.get_collection('train_step')[0]
         self._setup_summary()
-
-        self.writer.add_graph(tf.get_default_graph())
 
     def _create_model(self, image_shape, label_shape):
         self.image = tf.placeholder(tf.float32, [None, image_shape[0], image_shape[1], image_shape[2]], name='image')
@@ -86,8 +83,6 @@ class NeuralNetwork:
         # Initialize weights
         self.session.run(tf.global_variables_initializer())
 
-        self.writer.add_graph(tf.get_default_graph())
-
     def _setup_loss(self):
         #flat_logits = tf.reshape(tensor = self.output, shape = (-1, int(self.output.shape[3])))
         #flat_labels = tf.reshape(tensor = self.label, shape = (-1, int(self.label.shape[3])))
@@ -123,6 +118,9 @@ class NeuralNetwork:
             self._create_model(test_image.shape, test_label.shape)
             print('NeuralNetwork: Model successfully created')
 
+        writer = tf.summary.FileWriter(LOG_DIR)
+        writer.add_graph(tf.get_default_graph())
+
         training_paths, validation_paths = self._split_training_and_validation(image_and_label_paths)
 
         training_size = len(training_paths)
@@ -144,7 +142,7 @@ class NeuralNetwork:
                 loss, _, loss_summary = self.session.run(variables, feed_dict=feed_dict)
 
                 step = epoch * training_batches_per_epoch + batch
-                self.writer.add_summary(loss_summary, step)
+                writer.add_summary(loss_summary, step)
 
                 training_losses.append(loss * len(batch_images))
             training_loss = np.sum(training_losses) / training_size
@@ -161,10 +159,10 @@ class NeuralNetwork:
                                                                     variables, feed_dict=feed_dict)
 
                 step = epoch * validation_batches_per_epoch + batch
-                self.writer.add_summary(loss_summary, step)
-                self.writer.add_summary(image_summary, step)
-                self.writer.add_summary(label_summary, step)
-                self.writer.add_summary(output_summary, step)
+                writer.add_summary(loss_summary, step)
+                writer.add_summary(image_summary, step)
+                writer.add_summary(label_summary, step)
+                writer.add_summary(output_summary, step)
 
                 validation_losses.append(loss * len(batch_images))
             if validation_size > 0:
@@ -176,6 +174,9 @@ class NeuralNetwork:
                    .format(epoch + 1, epochs, training_loss, validation_loss))
 
             saver.save(self.session, MODEL_FILENAME)
+
+        writer.close()
+
         print('NeuralNetwork: Training done')
 
     def _load_batch(self, paths, batch, batch_size):
@@ -224,5 +225,4 @@ class NeuralNetwork:
         return outputs
 
     def close(self):
-        self.writer.close()
         self.session.close()
