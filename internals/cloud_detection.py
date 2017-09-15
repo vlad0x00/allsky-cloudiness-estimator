@@ -11,6 +11,7 @@ from os import walk
 from os.path import join, splitext
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+import matplotlib.widgets as widgets
 
 IMAGES_EXT = '.jpg'
 ORIGINAL_WIDTH = 5184
@@ -31,7 +32,28 @@ def preprocess_images(images):
 
     return preprocessed_images
 
+g_display_images = False
+end = False
+
+def turn_off_images(_):
+    global g_display_images
+    g_display_images = False
+    plt.close()
+
+def stop_processing(_):
+    global end
+    end = True
+    plt.close()
+
+def next_image(_):
+    plt.close()
+
 def estimate_cloudiness(image_paths, coordinates, display_images):
+    global g_display_images
+    global end
+
+    g_display_images = display_images
+
     percentages = []
 
     input_coordinates = []
@@ -54,6 +76,8 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
 
     neural_network = NeuralNetwork()
     for i in range(0, len(image_paths), BATCH_SIZE):
+        print('Processing {}/{}'.format(i + 1, len(image_paths)))
+
         images = []
         for j in range(BATCH_SIZE):
             if i + j >= len(image_paths):
@@ -75,14 +99,14 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
                         points_inside += 1
 
             if points_inside > 0:
-                percentages.append(cloudiness / points_inside)
+                percentages.append(int(round(100 * cloudiness / points_inside)))
             else:
                 print('ERROR: Invalid coordinates or image')
                 percentages.append(-1)
 
-            if display_images:
+            if g_display_images:
                 plt.figure(figsize=(10, 5))
-                plt.figtext(0.43, 0.94, 'Cloudiness: ' + str(int(round(100 * percentages[-1]))) + '%', size='x-large')
+                plt.figtext(0.43, 0.94, 'Cloudiness: ' + str(percentages[-1]) + '%', size='x-large')
 
                 subplot = plt.subplot(121)
                 plt.imshow(preprocessed_images[i][:, :, ::-1])
@@ -110,7 +134,24 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
                 input_polygon_patch.set_color('#eeefff')
                 subplot.add_patch(input_polygon_patch)
 
+                axes1 = plt.axes([0.265, 0.034, 0.15, 0.075])
+                button1 = widgets.Button(axes1, 'Turn off images')
+                button1.on_clicked(turn_off_images)
+
+                axes2 = plt.axes([0.440, 0.034, 0.15, 0.075])
+                button2 = widgets.Button(axes2, 'Stop processing')
+                button2.on_clicked(stop_processing)
+
+                axes3 = plt.axes([0.615, 0.034, 0.15, 0.075])
+                button3 = widgets.Button(axes3, 'Next')
+                button3.on_clicked(next_image)
+
                 plt.show()
+
+            if end:
+                break
+        if end:
+            break
     neural_network.close()
 
     return percentages
@@ -133,7 +174,7 @@ def get_image_paths(images_dir, start_datetime, end_datetime):
     datetimes = []
     for path_and_datetime in paths_and_datetimes:
         paths.append(path_and_datetime[0])
-        datetimes.append(str(path_and_datetime[1]))
+        datetimes.append(path_and_datetime[1])
 
     return paths, datetimes
 
@@ -142,4 +183,12 @@ def get_cloudiness_percentages(start_date, end_date, center_of_view, field_of_vi
     coordinates = view2pixel(center_of_view, field_of_view, rotation)
     percentages = estimate_cloudiness(image_paths, coordinates, display_images)
 
-    return datetimes, percentages
+    datetimes_str = []
+    for datetime in datetimes:
+        datetimes_str.append(str(datetime))
+
+    percentages_str = []
+    for percentage in percentages:
+        percentages_str.append(str(percentage) + '%')
+
+    return datetimes_str, percentages_str
