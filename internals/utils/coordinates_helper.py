@@ -60,11 +60,11 @@ def horizontal2pixel(horizontal_coordinates):
 
     return image_coordinates
 
-def view2pixel(center_of_view, field_of_view, rotation):
+def view2pixel(center_of_view, width_of_view, rotation):
     # This is some real Savan magic
 
-    delta_azimuth = degrees(atan(tan(radians(field_of_view / 2)) * cos(radians(rotation))))
-    delta_zenithal = degrees(asin(sin(radians(field_of_view / 2)) * sin(radians(rotation))))
+    delta_azimuth = degrees(atan(tan(radians(width_of_view / 2)) * cos(radians(rotation))))
+    delta_zenithal = degrees(asin(sin(radians(width_of_view / 2)) * sin(radians(rotation))))
 
     # p and q are projections of center_of_view to field of view sides
     p = (center_of_view[0] - delta_azimuth, center_of_view[1] - delta_zenithal)

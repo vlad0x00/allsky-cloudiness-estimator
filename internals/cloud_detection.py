@@ -1,6 +1,6 @@
 from .utils.coordinates_helper import view2pixel
 from .neural_network.NeuralNetwork import NeuralNetwork
-from datetime import datetime
+from datetime import datetime, timedelta
 from matplotlib import path
 import scipy.misc
 import numpy as np
@@ -156,7 +156,7 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
 
     return percentages
 
-def get_image_paths(images_dir, start_datetime, end_datetime):
+def get_image_paths(images_dir, start_datetime, end_datetime, interval):
     paths_and_datetimes = []
     for dirpath, dirnames, filenames in walk(images_dir):
         for filename in filenames:
@@ -172,15 +172,18 @@ def get_image_paths(images_dir, start_datetime, end_datetime):
 
     paths = []
     datetimes = []
+    last_datetime = None
     for path_and_datetime in paths_and_datetimes:
-        paths.append(path_and_datetime[0])
-        datetimes.append(path_and_datetime[1])
+        if (last_datetime == None) or (path_and_datetime[1] - last_datetime >= interval):
+            paths.append(path_and_datetime[0])
+            datetimes.append(path_and_datetime[1])
+            last_datetime = path_and_datetime[1]
 
     return paths, datetimes
 
-def get_cloudiness_percentages(start_date, end_date, center_of_view, field_of_view, rotation, images_dir, display_images=False):
-    image_paths, datetimes = get_image_paths(images_dir, start_date, end_date)
-    coordinates = view2pixel(center_of_view, field_of_view, rotation)
+def get_cloudiness_percentages(start_date, end_date, center_of_view, width_of_view, rotation, images_dir, interval=timedelta(minutes=30), display_images=False):
+    image_paths, datetimes = get_image_paths(images_dir, start_date, end_date, interval)
+    coordinates = view2pixel(center_of_view, width_of_view, rotation)
     percentages = estimate_cloudiness(image_paths, coordinates, display_images)
 
     datetimes_str = []
