@@ -1,4 +1,4 @@
-from math import sin, cos, tan, asin, acos, atan, atan2, radians, degrees, sqrt
+from math import sin, cos, tan, asin, acos, atan, atan2, radians, degrees, sqrt, fabs, pi
 import os
 
 COORDINATES_FILE = os.path.dirname(os.path.abspath(__file__)) + '/horizontal_coordinates.txt'
@@ -60,19 +60,31 @@ def horizontal2pixel(horizontal_coordinates):
 
     return image_coordinates
 
+def angle_between_xy(p1, p2):
+    return degrees(atan2(p2[1] - p1[1], p2[0] - p1[0]))
+
 def view2pixel(center_of_view, width_of_view, rotation):
     # This is some real Savan magic
 
+    azimuth = center_of_view[0]
+    height = center_of_view[1]
+    if height > 89:
+        height = 89
+
+    if fabs(rotation) < 1:
+        rotation = 1 if rotation >= 0 else -1
+
     delta_azimuth = degrees(atan(tan(radians(width_of_view / 2)) * cos(radians(rotation))))
-    delta_zenithal = degrees(asin(sin(radians(width_of_view / 2)) * sin(radians(rotation))))
+    #delta_zenithal = degrees(asin(sin(radians(width_of_view / 2)) * sin(radians(rotation))))
+    delta_zenithal = degrees(atan(sin(radians(width_of_view / 2)) * sin(radians(rotation)) * cos(radians(rotation))))
 
     # p and q are projections of center_of_view to field of view sides
-    p = (center_of_view[0] - delta_azimuth, center_of_view[1] - delta_zenithal)
-    q = (center_of_view[0] + delta_azimuth, center_of_view[1] + delta_zenithal)
+    p = (azimuth - delta_azimuth, height)
+    q = (azimuth + delta_azimuth, height)
 
     # ps and qs are corresponding s points, where s is intersection of horizon-aligned and rotated field of view
-    ps = (center_of_view[0] - delta_azimuth, center_of_view[1])
-    qs = (center_of_view[0] + delta_azimuth, center_of_view[1])
+    ps = (azimuth - delta_azimuth, height - delta_zenithal)
+    qs = (azimuth + delta_azimuth, height + delta_zenithal)
 
     coordinates = [ p, ps, q, qs]
     for i in range(len(coordinates)):
@@ -90,31 +102,35 @@ def view2pixel(center_of_view, width_of_view, rotation):
     q_xy = helper_coordinates[2]
     qs_xy = helper_coordinates[3]
 
-    # angle between p and ps, and q and qs respectively
-    p_angle = degrees(atan2(ps_xy[1] - p_xy[1], ps_xy[0] - p_xy[0]))
-    q_angle = degrees(atan2(qs_xy[1] - q_xy[1], qs_xy[0] - q_xy[0]))
+    pqs_angle = angle_between_xy(p_xy, qs_xy)
+
+    c_xy = horizontal2pixel([ center_of_view ])[0]
 
     dx = p_xy[0] - q_xy[0]
     dy = p_xy[1] - q_xy[1]
-    width = round(sqrt(dx ** 2 + dy ** 2))
-    height = round(width * 3 / 4)
+    width = sqrt(dx ** 2 + dy ** 2)
+    width /= cos(radians(height))
+    height = width * 3 / 4
+
+    diagonal = sqrt(width ** 2 + height ** 2)
+    diagonal_angle = degrees(acos(width / diagonal))
 
     coordinates = []
 
-    x = round(p_xy[0] + height / 2 * cos(radians(p_angle)))
-    y = round(p_xy[1] + height / 2 * sin(radians(p_angle)))
+    x = round(c_xy[0] + diagonal / 2 * cos(radians(pqs_angle + diagonal_angle)))
+    y = round(c_xy[1] + diagonal / 2 * sin(radians(pqs_angle + diagonal_angle)))
     coordinates.append((x, y))
 
-    x = round(p_xy[0] + height / 2 * cos(radians(p_angle + 180)))
-    y = round(p_xy[1] + height / 2 * sin(radians(p_angle + 180)))
+    x = round(c_xy[0] + diagonal / 2 * cos(radians(pqs_angle - diagonal_angle)))
+    y = round(c_xy[1] + diagonal / 2 * sin(radians(pqs_angle - diagonal_angle)))
     coordinates.append((x, y))
 
-    x = round(q_xy[0] + height / 2 * cos(radians(q_angle)))
-    y = round(q_xy[1] + height / 2 * sin(radians(q_angle)))
+    x = round(c_xy[0] + diagonal / 2 * cos(radians(pqs_angle + 180 + diagonal_angle)))
+    y = round(c_xy[1] + diagonal / 2 * sin(radians(pqs_angle + 180 + diagonal_angle)))
     coordinates.append((x, y))
 
-    x = round(q_xy[0] + height / 2 * cos(radians(q_angle + 180)))
-    y = round(q_xy[1] + height / 2 * sin(radians(q_angle + 180)))
+    x = round(c_xy[0] + diagonal / 2 * cos(radians(pqs_angle + 180 - diagonal_angle)))
+    y = round(c_xy[1] + diagonal / 2 * sin(radians(pqs_angle + 180 - diagonal_angle)))
     coordinates.append((x, y))
 
     center = (0, 0)
