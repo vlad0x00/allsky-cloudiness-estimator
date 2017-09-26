@@ -186,12 +186,8 @@ def get_cloudiness_percentages(start_date, end_date, center_of_view, width_of_vi
     coordinates = view2pixel(center_of_view, width_of_view, rotation)
     percentages = estimate_cloudiness(image_paths, coordinates, display_images)
 
-    datetimes_str = []
-    for datetime in datetimes:
-        datetimes_str.append(str(datetime))
+    output = []
+    for i in range(len(datetimes)):
+        output.append((str(datetime), str(percentage) + '%'))
 
-    percentages_str = []
-    for percentage in percentages:
-        percentages_str.append(str(percentage) + '%')
-
-    return datetimes_str, percentages_str
+    return output

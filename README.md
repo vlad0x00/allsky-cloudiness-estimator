@@ -1,6 +1,4 @@
-# Allsky Cloud Detector
-This project is a work in progress, but the following is planned:
-
+# Allsky Cloudiness Estimator
 A cloudiness estimator for allsky camera images. The project was originally started for Petnica Meteor Group that sought to automate the manual process of estimating
 cloudiness in allsky camera night images for the purposes of calculating Zenithal Hourly Rate.
 
