@@ -1,6 +1,6 @@
 import random
 import tensorflow as tf
-import scipy.misc
+import cv2
 import numpy as np
 import os.path
 import math
@@ -112,8 +112,8 @@ class NeuralNetwork:
     def train(self, image_and_label_paths, batch_size, epochs):
         if not self.model_loaded:
             print('NeuralNetwork: No model exists, creating one...')
-            test_image = scipy.misc.imread(image_and_label_paths[0][0])
-            test_label = scipy.misc.imread(image_and_label_paths[0][1], flatten=True)
+            test_image = cv2.imread(image_and_label_paths[0][0])
+            test_label = cv2.imread(image_and_label_paths[0][1], cv2.IMREAD_GRAYSCALE)
             test_label = np.reshape(test_label, (test_label.shape[0], test_label.shape[1], 1))
             self._create_model(test_image.shape, test_label.shape)
             print('NeuralNetwork: Model successfully created')
@@ -189,12 +189,11 @@ class NeuralNetwork:
         labels = []
 
         for idx in range(start, end):
-            image = scipy.misc.imread(paths[idx][0])
-            image = image[:, :, ::-1] # BGR -> RGB
+            image = cv2.imread(paths[idx][0])
             image = np.divide(image, 255)
             images.append(image)
 
-            label = scipy.misc.imread(paths[idx][1], flatten=True)
+            label = cv2.imread(paths[idx][1], cv2.IMREAD_GRAYSCALE)
             label = np.reshape(label, (label.shape[0], label.shape[1], 1))
             label = np.divide(label, 255)
             labels.append(label)

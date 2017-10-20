@@ -1,17 +1,17 @@
 from .utils.coordinates_helper import view2pixel
 from .neural_network.NeuralNetwork import NeuralNetwork
-from datetime import datetime, timedelta
-from matplotlib import path
-import scipy.misc
-import numpy as np
-from PIL import Image
 from .utils.sky_extractor import extract_sky
 from .utils.fixes import fix_dead_pixels
-from os import walk
-from os.path import join, splitext
+from datetime import datetime, timedelta
+from matplotlib import path
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widgets
+import numpy as np
+from os import walk
+from os.path import join, splitext
+import cv2
+from PIL import Image
 
 IMAGES_EXT = '.jpg'
 ORIGINAL_WIDTH = 5184
@@ -82,8 +82,7 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
         for j in range(BATCH_SIZE):
             if i + j >= len(image_paths):
                 break
-            image = scipy.misc.imread(image_paths[i + j])
-            image = np.array(image[:, :, ::-1]) # BGR -> RGB
+            image = cv2.imread(image_paths[i + j])
             images.append(image)
 
         preprocessed_images = preprocess_images(images)
@@ -121,7 +120,7 @@ def estimate_cloudiness(image_paths, coordinates, display_images):
                 output = np.multiply(cloud_output, 255)
                 output = np.stack([output, output.copy(), output.copy()], axis = -1)
                 output = np.reshape(output, (output.shape[1], output.shape[0], 3))
-                output = scipy.misc.imresize(output, (NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE), interp='bicubic')
+                output = cv2.resize(output, dsize=(NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE), interpolation=cv2.INTER_AREA)
                 output = np.divide(output, 255)
 
                 subplot = plt.subplot(122)
