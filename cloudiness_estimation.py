@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import sys
+import os
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-import os
 from datetime import *
 from internals.cloud_detection import get_cloudiness_percentages
 
@@ -67,9 +67,6 @@ class CameraWindow(QWidget):
         self.p4.move(135, 180)
         self.p4.resize(45,30)
         self.p4.setText(self.values[3])
-
-
-
 
         OK = QPushButton('OK', self)
         OK.resize(150, 50)
@@ -166,8 +163,6 @@ class BrowseWindow(QWidget):
 
         self.lbl1 = QLabel("Save current path?", self)
         self.lbl1.move(160, 70)
-
-
 
 
         OK = QPushButton('OK', self)
@@ -367,20 +362,23 @@ class MainWindow(QMainWindow):
                 if self.checkYMD() == False:
                         error = "Start date must be older than End date."
                         QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
-                else:
-                        self.Banjo = get_cloudiness_percentages(
-                                                    start_date=self.begin_config,
-                                                    end_date=self.end_config,
-                                                    center_of_view=(self.azimuth_config, self.height_config),
-                                                    width_of_view=self.WoV_config,
-                                                    rotation=self.rotation_config,
-                                                    images_dir=self.browse_config,
-                                                    interval=timedelta(minutes=self.interval_config),
-                                                    display_images=self.show_config
-                                                 )
-
+                else:   
                         self.storeInterval()
                         self.storeDates()
+                        
+                        self.readConfig()
+                        start_date = self.begin_config
+                        end_date = self.end_config
+                        center_of_view = (self.azimuth_config, self.height_config)
+                        width_of_view = self.WoV_config
+                        rotation = self.rotation_config
+                        images_dir = self.browse_config
+                        interval = timedelta(minutes = self.interval_config)
+
+                        display_images = True#self.show_config
+                        
+                        self.Banjo = get_cloudiness_percentages(start_date, end_date, center_of_view, width_of_view, rotation, images_dir, interval, display_images)
+                        
                         self.makeCSV()
 
                         #use WoV, azimuth, height, rotation, begin, end, interval, show and browse with prefix self. and sifux _config
@@ -391,13 +389,13 @@ class MainWindow(QMainWindow):
 
         begin = str(self.d1.currentText()) + str(self.m1.currentText()) + str(self.y1.currentText()) + self.hour1.text() + self.min1.text()
 
-        fbegin = open("config/begin.txt", "w")
+        fbegin = open("internals/config/begin.txt", "w")
         fbegin.write(begin)
         fbegin.close()
 
         end = str(self.d2.currentText()) + str(self.m2.currentText()) + str(self.y2.currentText()) + self.hour2.text() + self.min2.text()
 
-        fend = open("config/end.txt", "w")
+        fend = open("internals/config/end.txt", "w")
         fend.write(end)
         fend.close()
 
