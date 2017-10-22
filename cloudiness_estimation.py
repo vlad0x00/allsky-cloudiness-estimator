@@ -75,31 +75,31 @@ class CameraWindow(QWidget):
 
     def okButton(self):
 
-        self.WoV = self.p1.text()
-        self.Az = self.p2.text()
-        self.H = self.p3.text()
-        self.Rot = self.p4.text()
+        wov = self.p1.text()
+        az = self.p2.text()
+        h = self.p3.text()
+        rot = self.p4.text()
 
-        self.WoV_msg = ""
-        if self.checkWoV() == False: self.WoV_msg = "Width of View must have a value between 0-180.\n"
+        wov_msg = ""
+        if self.checkWoV(wov) == False: wov_msg = "Width of View must have a value between 0-360.\n"
 
-        self.Az_msg = ""
-        if self.checkAz() == False: self.Az_msg = "Azimuth must have a value between 0-360.\n"
+        az_msg = ""
+        if self.checkAz(az) == False: az_msg = "Azimuth must have a value between 0-180.\n"
 
-        self.H_msg = ""
-        if self.checkH() == False: self.H_msg = "Height must have a value between 0-90.\n"
+        h_msg = ""
+        if self.checkH(h) == False: h_msg = "Height must have a value between 0-90.\n"
 
-        self.Rot_msg = ""
-        if self.checkRot() == False: self.Rot_msg = "Height must have a value between 0-90.\n"
+        rot_msg = ""
+        if self.checkRot(rot) == False: rot_msg = "Height must have a value between 0-90.\n"
 
 
-        if self.checkInput() == False:
-                error = self.WoV_msg + self.Az_msg + self.H_msg + self.Rot_msg
+        if self.checkInput(wov, az, h, rot) == False:
+                error = wov_msg + az_msg + h_msg + rot_msg
                 QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
 
         else:
                 f = open("internals/config/camera.txt", "w")
-                data = [self.WoV, self.Az, self.H, self.Rot]
+                data = [wov, az, h, rot]
                 for p in data:
                         f.write(p+os.linesep)
 
@@ -113,35 +113,35 @@ class CameraWindow(QWidget):
             except ValueError:
                 return False
 
-    def checkInput(self):
-        return (self.checkWoV() and self.checkAz() and self.checkH() and self.checkRot())
+    def checkInput(self, wov, az, h, rot):
+        return (self.checkWoV(wov) and self.checkAz(az) and self.checkH(h) and self.checkRot(rot))
 
-    def checkWoV(self):
+    def checkWoV(self, wov):
         check = []
         for i in range (0, 361):
                 check.append(str(i))
-        if self.WoV in check: return True
+        if wov in check: return True
         else: return False
 
-    def checkAz(self):
+    def checkAz(self, az):
         check = []
         for i in range (0, 181):
                 check.append(str(i))
-        if self.Az in check: return True
+        if az in check: return True
         else: return False
 
-    def checkH(self):
+    def checkH(self, h):
         check = []
         for i in range (0, 91):
                 check.append(str(i))
-        if self.H in check: return True
+        if h in check: return True
         else: return False
 
-    def checkRot(self):
+    def checkRot(self, rot):
         check = []
         for i in range (0, 91):
                 check.append(str(i))
-        if self.Rot in check: return True
+        if rot in check: return True
         else: return False
 
 class BrowseWindow(QWidget):
