@@ -8,6 +8,8 @@ from PyQt5.QtCore import *
 from datetime import *
 from internals.cloud_detection import get_cloudiness_percentages
 
+
+#POPRAVITI READ_CONFIG DA LICI NA NESTO
 class CameraWindow(QWidget):
 
     def __init__(self):
@@ -402,7 +404,12 @@ class MainWindow(QMainWindow):
     def makeCSV(self):
 
         code = self.Banjo[0][0]
-        file_path = "tables/"+code+".csv"
+        mypath = "Tables"
+
+        if not os.path.isdir(mypath):
+           os.makedirs(mypath)
+
+        file_path = "Tables/"+code+".csv"
         f = open(file_path, "w")
         f.write("time,cloudiness"+'\n')
         for info in self.Banjo:
