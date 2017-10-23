@@ -379,9 +379,9 @@ class MainWindow(QMainWindow):
 
                         display_images = True#self.show_config
                         
-                        self.Banjo = get_cloudiness_percentages(start_date, end_date, center_of_view, width_of_view, rotation, images_dir, interval, display_images)
+                        cloudiness_perc = get_cloudiness_percentages(start_date, end_date, center_of_view, width_of_view, rotation, images_dir, interval, display_images)
                         
-                        self.makeCSV()
+                        self.makeCSV(cloudiness_perc)
 
                         #use WoV, azimuth, height, rotation, begin, end, interval, show and browse with prefix self. and sifux _config
 
@@ -401,9 +401,9 @@ class MainWindow(QMainWindow):
         fend.write(end)
         fend.close()
 
-    def makeCSV(self):
+    def makeCSV(self, cloudiness_perc):
 
-        code = self.Banjo[0][0]
+        code = cloudiness_perc[0][0]
         mypath = "Tables"
 
         if not os.path.isdir(mypath):
@@ -412,7 +412,7 @@ class MainWindow(QMainWindow):
         file_path = "Tables/"+code+".csv"
         f = open(file_path, "w")
         f.write("time,cloudiness"+'\n')
-        for info in self.Banjo:
+        for info in cloudiness_perc:
                         data = str(info[0]) + "," + (info[1]) + '\n'
                         f.write(data)
         f.close()
