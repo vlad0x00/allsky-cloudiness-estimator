@@ -9,7 +9,6 @@ from datetime import *
 from internals.cloud_detection import get_cloudiness_percentages
 
 
-#POPRAVITI READ_CONFIG DA LICI NA NESTO
 class CameraWindow(QWidget):
 
     def __init__(self):
@@ -48,7 +47,6 @@ class CameraWindow(QWidget):
         self.p2.resize(45,30)
         self.p2.setText(self.values[1])
 
-
         lbl5 = QLabel("Ev.", self)
         lbl5.move(200, 95)
 
@@ -61,7 +59,6 @@ class CameraWindow(QWidget):
         lbl6 = QLabel("Camera Rotation:", self)
         lbl6.move(20, 185)
 
-
         lbl7 = QLabel("Deg.", self)
         lbl7.move(140, 160)
 
@@ -73,9 +70,9 @@ class CameraWindow(QWidget):
         OK = QPushButton('OK', self)
         OK.resize(150, 50)
         OK.move(50, 250)
-        OK.clicked.connect(self.okButton)
+        OK.clicked.connect(self.ok_button)
 
-    def okButton(self):
+    def ok_button(self):
 
         wov = self.p1.text()
         az = self.p2.text()
@@ -83,30 +80,29 @@ class CameraWindow(QWidget):
         rot = self.p4.text()
 
         wov_msg = ""
-        if self.checkWoV(wov) == False: wov_msg = "Width of View must have a value between 0-360.\n"
+        if self.check_wov(wov) == False: wov_msg = "Width of View must have a value between 0-360.\n"
 
         az_msg = ""
-        if self.checkAz(az) == False: az_msg = "Azimuth must have a value between 0-180.\n"
+        if self.check_az(az) == False: az_msg = "Azimuth must have a value between 0-180.\n"
 
         h_msg = ""
-        if self.checkH(h) == False: h_msg = "Height must have a value between 0-90.\n"
+        if self.check_h(h) == False: h_msg = "Height must have a value between 0-90.\n"
 
         rot_msg = ""
-        if self.checkRot(rot) == False: rot_msg = "Height must have a value between 0-90.\n"
+        if self.check_rot(rot) == False: rot_msg = "Height must have a value between 0-90.\n"
 
-
-        if self.checkInput(wov, az, h, rot) == False:
-                error = wov_msg + az_msg + h_msg + rot_msg
-                QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
+        if self.check_input(wov, az, h, rot) == False:
+            error = wov_msg + az_msg + h_msg + rot_msg
+            QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
 
         else:
-                f = open("internals/config/camera.txt", "w")
-                data = [wov, az, h, rot]
-                for p in data:
-                        f.write(p+os.linesep)
+            f = open("internals/config/camera.txt", "w")
+            data = [wov, az, h, rot]
+            for p in data:
+                f.write(p+os.linesep)
 
-                f.close()
-                self.close()
+            f.close()
+            self.close()
 
     def is_number(self,s):
             try:
@@ -115,31 +111,31 @@ class CameraWindow(QWidget):
             except ValueError:
                 return False
 
-    def checkInput(self, wov, az, h, rot):
-        return (self.checkWoV(wov) and self.checkAz(az) and self.checkH(h) and self.checkRot(rot))
+    def check_input(self, wov, az, h, rot):
+        return (self.check_wov(wov) and self.check_az(az) and self.check_h(h) and self.check_rot(rot))
 
-    def checkWoV(self, wov):
+    def check_wov(self, wov):
         check = []
         for i in range (0, 361):
                 check.append(str(i))
         if wov in check: return True
         else: return False
 
-    def checkAz(self, az):
+    def check_az(self, az):
         check = []
         for i in range (0, 181):
                 check.append(str(i))
         if az in check: return True
         else: return False
 
-    def checkH(self, h):
+    def check_h(self, h):
         check = []
         for i in range (0, 91):
                 check.append(str(i))
         if h in check: return True
         else: return False
 
-    def checkRot(self, rot):
+    def check_rot(self, rot):
         check = []
         for i in range (0, 91):
                 check.append(str(i))
@@ -162,30 +158,27 @@ class BrowseWindow(QWidget):
         self.lbl0 = QLabel("Current Path: "+ self.path, self)
         self.lbl0.move(50, 20)
 
-
         self.lbl1 = QLabel("Save current path?", self)
         self.lbl1.move(160, 70)
-
 
         OK = QPushButton('OK', self)
         OK.resize(150, 50)
         OK.move(50, 110)
-        OK.clicked.connect(self.okButton)
+        OK.clicked.connect(self.ok_button)
 
         Cancel = QPushButton('Cancel', self)
         Cancel.resize(150, 50)
         Cancel.move (250, 110)
-        Cancel.clicked.connect(self.cancelButton)
+        Cancel.clicked.connect(self.cancel_button)
 
-    def cancelButton(self):
+    def cancel_button(self):
         self.close()
 
-    def okButton(self):
+    def ok_button(self):
         f = open("internals/config/browse.txt", "w")
         f.write(self.path)
         f.close()
         self.close()
-
 
 class MainWindow(QMainWindow):
 
@@ -194,9 +187,7 @@ class MainWindow(QMainWindow):
 
         self.initUI()
 
-
     def initUI(self):
-
 
         #toolbar init
         CameraAct = QAction(QIcon('internals/icons/fov.png'), 'Field of View', self)
@@ -221,7 +212,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('PMG camera')
         self.setWindowIcon(QIcon("fov.png"))
         self.center()
-
 
         #date1 input init
 
@@ -251,7 +241,6 @@ class MainWindow(QMainWindow):
         self.y1.resize(70, 30)
         self.y1.move(120, 70)
 
-
         self.lbl2 = QLabel("Hrs.", self)
         self.lbl2.move(250, 40)
         self.hour1 = QLineEdit(self)
@@ -265,7 +254,6 @@ class MainWindow(QMainWindow):
         self.min1.move(290, 70)
         self.min1.resize(30,30)
         self.min1.setText("00")
-
 
         #date 2 input init
         move_down = 80
@@ -296,7 +284,6 @@ class MainWindow(QMainWindow):
         self.y2.resize(70, 30)
         self.y2.move(120, 70+move_down)
 
-
         self.lbl5 = QLabel("Hrs.", self)
         self.lbl5.move(250, 120)
         self.hour2 = QLineEdit(self)
@@ -323,20 +310,17 @@ class MainWindow(QMainWindow):
         self.interval.setText(init[0])
 
         #Checkbox init
-        self.show_image = QCheckBox('Show images', self)
-        self.show_image.move(220, 240)
-        self.show_image.toggle()
-        self.show_image.stateChanged.connect(self.showImage)
+        self.show_img = QCheckBox('Show images', self)
+        self.show_img.move(220, 240)
+        self.show_img.toggle()
 
         #Button init
-
         calc = QPushButton('Calculate', self)
         calc.resize(150, 50)
         calc.move(95, self.height-100)
-        calc.clicked.connect(self.calculateButton)
+        calc.clicked.connect(self.calculate_button)
 
         self.show()
-
 
     def camera(self):
         self.camera = CameraWindow()
@@ -346,48 +330,46 @@ class MainWindow(QMainWindow):
         self.B = BrowseWindow()
         self.B.show()
 
-    def showImage(self, state):
-        if state == Qt.Checked:
-            self.show_config = True
+    def show_image(self):
+        if self.show_img.isChecked():
+            return True
+            
         else:
-            self.show_config = False
+            return False
 
-
-    def calculateButton(self):
-        if self.checkHM() == False:
-                error = "Hours must have values between 0-23.\nMinutes must have values between 0-59."
-                QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
-        if self.checkInterval() == False:
-                error = "Interval must be a number."
-                QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
+    def calculate_button(self):
+        if self.check_hm() == False:
+            error = "Hours must have values between 0-23.\nMinutes must have values between 0-59."
+            QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
+        if self.check_interval() == False:
+            error = "Interval must be a number."
+            QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
         else:
-                if self.checkYMD() == False:
-                        error = "Start date must be older than End date."
-                        QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
-                else:   
-                        self.storeInterval()
-                        self.storeDates()
-                        
-                        self.readConfig()
-                        start_date = self.begin_config
-                        end_date = self.end_config
-                        center_of_view = (self.azimuth_config, self.height_config)
-                        width_of_view = self.WoV_config
-                        rotation = self.rotation_config
-                        images_dir = self.browse_config
-                        interval = timedelta(minutes = self.interval_config)
+            if self.check_ymd() == False:
+                    error = "Start date must be older than End date."
+                    QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
+            else:   
+                self.store_interval()
+                self.store_dates()
+                
+                config = self.read_config()
+                
+                start_date = config[0]
+                end_date = config[1]
+                center_of_view = config[2]
+                width_of_view = config[3]
+                rotation = config[4]
+                images_dir = config[5]
+                interval = timedelta(minutes = config[6])
+                display_images = self.show_image()
+                                                               
+                cloudiness_perc = get_cloudiness_percentages(start_date, end_date, center_of_view, width_of_view, rotation, images_dir, interval, display_images)
+                
+                self.make_csv(cloudiness_perc)
 
-                        display_images = True#self.show_config
-                        
-                        cloudiness_perc = get_cloudiness_percentages(start_date, end_date, center_of_view, width_of_view, rotation, images_dir, interval, display_images)
-                        
-                        self.makeCSV(cloudiness_perc)
+                QMessageBox.information(self, "Success!", "Estimation was successful!", QMessageBox.Ok)
 
-                        #use WoV, azimuth, height, rotation, begin, end, interval, show and browse with prefix self. and sifux _config
-
-                        QMessageBox.information(self, "Success!", "Estimation was successful!", QMessageBox.Ok)
-
-    def storeDates(self):
+    def store_dates(self):
 
         begin = str(self.d1.currentText()) + str(self.m1.currentText()) + str(self.y1.currentText()) + self.hour1.text() + self.min1.text()
 
@@ -401,7 +383,7 @@ class MainWindow(QMainWindow):
         fend.write(end)
         fend.close()
 
-    def makeCSV(self, cloudiness_perc):
+    def make_csv(self, cloudiness_perc):
 
         code = cloudiness_perc[0][0]
         mypath = "Tables"
@@ -413,18 +395,18 @@ class MainWindow(QMainWindow):
         f = open(file_path, "w")
         f.write("time,cloudiness"+'\n')
         for info in cloudiness_perc:
-                        data = str(info[0]) + "," + (info[1]) + '\n'
-                        f.write(data)
+            data = str(info[0]) + "," + (info[1]) + '\n'
+            f.write(data)
         f.close()
 
     def is_number(self,s):
-            try:
-                int(s)
-                return True
-            except ValueError:
-                return False
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
 
-    def checkHM(self):
+    def check_hm(self):
         check = True
 
         h1 = self.hour1.text()
@@ -462,9 +444,7 @@ class MainWindow(QMainWindow):
                 check = False
                 return check
 
-
-
-    def checkYMD(self):
+    def check_ymd(self):
         check = True
 
         year1 = self.y1.currentText()
@@ -496,38 +476,40 @@ class MainWindow(QMainWindow):
                  check = False
                  return check
 
-    def readConfig(self):
+    def read_config(self):
         camera = open("internals/config/camera.txt", "r").read().splitlines()
-        self.WoV_config = int(camera[0])
-        self.azimuth_config = int(camera[1])
-        self.height_config = int(camera[2])
-        self.rotation_config = int(camera[3])
+        wov_config = int(camera[0])
+        azimuth_config = int(camera[1])
+        height_config = int(camera[2])
+        rotation_config = int(camera[3])
 
         f = open("internals/config/begin.txt", "r").read().splitlines()
-        begin = f[0]
-        self.begin_config = datetime.strptime(begin, "%d%m%Y%H%M")
+        start = f[0]
+        start_config = datetime.strptime(start, "%d%m%Y%H%M")
 
         f = open("internals/config/end.txt", "r").read().splitlines()
         end = f[0]
-        self.end_config = datetime.strptime(end, "%d%m%Y%H%M")
+        end_config = datetime.strptime(end, "%d%m%Y%H%M")
+        
+        f = open("internals/config/browse.txt", "r").read().splitlines()
+        browse_config  = f[0]
 
         f = open("internals/config/interval.txt", "r").read().splitlines()
-        self.interval_config = int(f[0])
+        interval_config = int(f[0])
 
-        f = open("internals/config/browse.txt", "r").read().splitlines()
-        self.browse_config  = f[0]
-
-
-
-    def checkInterval(self):
+        config = [start_config, end_config, (azimuth_config, height_config), wov_config,  rotation_config, browse_config, interval_config]
+        
+        return config
+    
+    def check_interval(self):
         return self.is_number(self.interval.text())
 
-    def storeInterval(self):
+    def store_interval(self):
         f = open("internals/config/interval.txt", "w")
         f.write(self.interval.text())
         f.close
 
-    def closeEvent(self, event):
+    def close_event(self, event):
 
         reply = QMessageBox.question(self, 'Message',
             "Are you sure to quit?", QMessageBox.No |
@@ -544,7 +526,6 @@ class MainWindow(QMainWindow):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
 
 if __name__ == '__main__':
 
