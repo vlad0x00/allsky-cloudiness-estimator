@@ -346,8 +346,8 @@ class MainWindow(QMainWindow):
         self.interval.move(80, 240)
         self.lbl6 = QLabel("Mins.", self)
         self.lbl6.move(82, 210)
-        init = open("internals/config/interval.txt", "r").read().splitlines()
-        self.interval.setText(init[0])
+        init = self.read_interval()
+        self.interval.setText(init)
 
         #Checkbox init
         self.show_img = QCheckBox('Show images', self)
@@ -361,6 +361,12 @@ class MainWindow(QMainWindow):
         calc.clicked.connect(self.calculate_button)
 
         self.show()
+
+    def read_interval(self):
+        config_interval = configparser.ConfigParser()
+        config_interval.read("config.ini")
+        interval = config_interval.get('MAIN_VALUES', 'interval')
+        return interval
 
     def camera(self):
         self.camera = CameraWindow()
@@ -411,17 +417,24 @@ class MainWindow(QMainWindow):
 
     def store_dates(self):
 
-        begin = str(self.d1.currentText()) + str(self.m1.currentText()) + str(self.y1.currentText()) + self.hour1.text() + self.min1.text()
-
+        start = str(self.d1.currentText()) + str(self.m1.currentText()) + str(self.y1.currentText()) + self.hour1.text() + self.min1.text()
+        config_dates = configparser.ConfigParser()
+        config_dates.read("config.ini")
+        """
         fbegin = open("internals/config/begin.txt", "w")
         fbegin.write(begin)
         fbegin.close()
-
+        """
         end = str(self.d2.currentText()) + str(self.m2.currentText()) + str(self.y2.currentText()) + self.hour2.text() + self.min2.text()
-
+        """
         fend = open("internals/config/end.txt", "w")
         fend.write(end)
         fend.close()
+        """
+        config_dates.set('MAIN_VALUES', 'start_date', start)
+        config_dates.set('MAIN_VALUES', 'end_date', end)
+        with open('config.ini', 'w') as configfile:
+            config_dates.write(configfile)
 
     def make_csv(self, cloudiness_perc):
 
@@ -513,8 +526,8 @@ class MainWindow(QMainWindow):
 
         if(date_start < date_end): return check
         else:
-                 check = False
-                 return check
+             check = False
+             return check
 
     def read_config(self):
         camera = open("internals/config/camera.txt", "r").read().splitlines()
@@ -545,10 +558,17 @@ class MainWindow(QMainWindow):
         return self.is_number(self.interval.text())
 
     def store_interval(self):
+            
+        config_interval = configparser.ConfigParser()
+        config_interval.read("config.ini")
+        config_interval.set('MAIN_VALUES', 'interval', self.interval.text())
+        with open('config.ini', 'w') as configfile:
+            config_interval.write(configfile)
+        """
         f = open("internals/config/interval.txt", "w")
         f.write(self.interval.text())
         f.close
-
+        """
     def close_event(self, event):
 
         reply = QMessageBox.question(self, 'Message',
