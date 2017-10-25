@@ -1,1 +1,1 @@
-/home/imafikus/Python/GUIcamera/tables
+/home/imafikus/Downloads/images
