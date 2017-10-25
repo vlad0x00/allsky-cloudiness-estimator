@@ -96,11 +96,6 @@ class CameraWindow(QWidget):
         h = self.p3.text()
         rot = self.p4.text()
 
-        print(wov)
-        print(az)
-        print(h)
-        print(rot)
-
         wov_msg = ""
         if self.check_wov(wov) == False: wov_msg = "Width of View must have a value between 0-360.\n"
 
@@ -127,14 +122,6 @@ class CameraWindow(QWidget):
             
             with open('config.ini', 'w') as configfile:
                 config_camera.write(configfile)            
-            """
-            f = open("internals/config/camera.txt", "w")
-            data = [wov, az, h, rot]
-            for p in data:
-                f.write(p+os.linesep)
-
-            f.close()
-            """
             self.close()
 
     def is_number(self,s):
@@ -395,9 +382,7 @@ class MainWindow(QMainWindow):
                     error = "Start date must be older than End date."
                     QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
             else:   
-                self.store_interval()
-                self.store_dates()
-                
+                                
                 config = self.read_config()
                 
                 start_date = config[0]
@@ -406,11 +391,14 @@ class MainWindow(QMainWindow):
                 width_of_view = config[3]
                 rotation = config[4]
                 images_dir = config[5]
-                interval = timedelta(minutes = config[6])
+                interval = timedelta(minutes = int(config[6]))
                 display_images = self.show_image()
                                                                
                 cloudiness_perc = get_cloudiness_percentages(start_date, end_date, center_of_view, width_of_view, rotation, images_dir, interval, display_images)
                 
+                self.store_interval()
+                self.store_dates()
+
                 self.make_csv(cloudiness_perc)
 
                 QMessageBox.information(self, "Success!", "Estimation was successful!", QMessageBox.Ok)
@@ -420,17 +408,9 @@ class MainWindow(QMainWindow):
         start = str(self.d1.currentText()) + str(self.m1.currentText()) + str(self.y1.currentText()) + self.hour1.text() + self.min1.text()
         config_dates = configparser.ConfigParser()
         config_dates.read("config.ini")
-        """
-        fbegin = open("internals/config/begin.txt", "w")
-        fbegin.write(begin)
-        fbegin.close()
-        """
+
         end = str(self.d2.currentText()) + str(self.m2.currentText()) + str(self.y2.currentText()) + self.hour2.text() + self.min2.text()
-        """
-        fend = open("internals/config/end.txt", "w")
-        fend.write(end)
-        fend.close()
-        """
+        
         config_dates.set('MAIN_VALUES', 'start_date', start)
         config_dates.set('MAIN_VALUES', 'end_date', end)
         with open('config.ini', 'w') as configfile:
@@ -530,27 +510,26 @@ class MainWindow(QMainWindow):
              return check
 
     def read_config(self):
-        camera = open("internals/config/camera.txt", "r").read().splitlines()
-        wov_config = int(camera[0])
-        azimuth_config = int(camera[1])
-        height_config = int(camera[2])
-        rotation_config = int(camera[3])
+        config = configparser.ConfigParser()
+        config.read("config.ini")
 
-        f = open("internals/config/begin.txt", "r").read().splitlines()
-        start = f[0]
+        wov_config = int(config.get('CAMERA_VALUES', 'width_of_view'))
+        azimuth_config = int(config.get('CAMERA_VALUES', 'azimuth'))
+        height_config = int(config.get('CAMERA_VALUES', 'elevation'))
+        rotation_config = int(config.get('CAMERA_VALUES', 'rotation'))
+        
+        start = config.get('MAIN_VALUES', 'start_date')
         start_config = datetime.strptime(start, "%d%m%Y%H%M")
 
-        f = open("internals/config/end.txt", "r").read().splitlines()
-        end = f[0]
+        
+        end = config.get('MAIN_VALUES', 'end_date')
         end_config = datetime.strptime(end, "%d%m%Y%H%M")
         
-        f = open("internals/config/browse.txt", "r").read().splitlines()
-        browse_config  = f[0]
+        browse_config  = config.get('MAIN_VALUES', 'interval')
 
-        f = open("internals/config/interval.txt", "r").read().splitlines()
-        interval_config = int(f[0])
+        interval_config = config.get('BROWSE_PATH', 'browse_path')
 
-        config = [start_config, end_config, (azimuth_config, height_config), wov_config,  rotation_config, browse_config, interval_config]
+        config = [start_config, end_config, (azimuth_config, height_config), wov_config,  rotation_config, interval_config, browse_config]
         
         return config
     
