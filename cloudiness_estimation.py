@@ -2,6 +2,7 @@
 
 import sys
 import os
+import configparser    
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -21,7 +22,11 @@ class CameraWindow(QWidget):
         self.setWindowTitle('Field of View')
         self.setFixedSize(self.size())
 
-        self.values = open("internals/config/camera.txt").read().splitlines()
+
+        
+        self.values = self.get_values()
+        print(self.values)
+        #return#open("internals/config/camera.txt").read().splitlines()
 
         #FOV part
         lbl1 = QLabel("Width of View:", self)
@@ -72,12 +77,29 @@ class CameraWindow(QWidget):
         OK.move(50, 250)
         OK.clicked.connect(self.ok_button)
 
+
+    def get_values(self):
+        camera_config = configparser.ConfigParser()
+        camera_config.read("config.ini")
+        wov = camera_config.get('CAMERA_VALUES','width_of_view')
+        az = camera_config.get('CAMERA_VALUES','azimuth')
+        h = camera_config.get('CAMERA_VALUES','elevation')
+        rot = camera_config.get('CAMERA_VALUES','rotation')
+        
+        values = [wov, az, h, rot]
+        return values
+
     def ok_button(self):
 
         wov = self.p1.text()
         az = self.p2.text()
         h = self.p3.text()
         rot = self.p4.text()
+
+        print(wov)
+        print(az)
+        print(h)
+        print(rot)
 
         wov_msg = ""
         if self.check_wov(wov) == False: wov_msg = "Width of View must have a value between 0-360.\n"
@@ -96,12 +118,23 @@ class CameraWindow(QWidget):
             QMessageBox.warning(self, "Input error", error, QMessageBox.Cancel)
 
         else:
+            config_camera = configparser.ConfigParser()
+            config_camera.read("config.ini")
+            config_camera.set('CAMERA_VALUES', 'width_of_view', wov)
+            config_camera.set('CAMERA_VALUES', 'azimuth', az)
+            config_camera.set('CAMERA_VALUES', 'elevation', h)
+            config_camera.set('CAMERA_VALUES', 'rotation', rot)
+            
+            with open('config.ini', 'w') as configfile:
+                config_camera.write(configfile)            
+            """
             f = open("internals/config/camera.txt", "w")
             data = [wov, az, h, rot]
             for p in data:
                 f.write(p+os.linesep)
 
             f.close()
+            """
             self.close()
 
     def is_number(self,s):
