@@ -208,9 +208,16 @@ class BrowseWindow(QWidget):
         self.close()
 
     def ok_button(self):
+        config_browse = configparser.ConfigParser()
+        config_browse.read("config.ini")
+        config_browse.set('BROWSE_PATH', 'browse_path', self.path)
+        with open('config.ini', 'w') as configfile:
+                config_browse.write(configfile)   
+        """       
         f = open("internals/config/browse.txt", "w")
         f.write(self.path)
         f.close()
+        """
         self.close()
 
 class MainWindow(QMainWindow):
