@@ -397,10 +397,14 @@ class MainWindow(QMainWindow):
                 
                 self.store_interval()
                 self.store_dates()
-
-                self.make_csv(cloudiness_perc)
-
-                QMessageBox.information(self, "Success!", "Estimation was successful!", QMessageBox.Ok)
+                is_empty = self.is_empty(cloudiness_perc)
+                
+                if (is_empty == True):
+                    QMessageBox.warning(self, "Warning!", "Chosen folder is empty!", QMessageBox.Ok)
+                
+                else:
+                    self.make_csv(cloudiness_perc)
+                    QMessageBox.information(self, "Success!", "Estimation was successful!", QMessageBox.Ok)
 
     def store_dates(self):
 
@@ -415,8 +419,15 @@ class MainWindow(QMainWindow):
         with open('config.ini', 'w') as configfile:
             config_dates.write(configfile)
 
-    def make_csv(self, cloudiness_perc):
-        
+    def is_empty(self, cloudiness_perc):
+
+        if len(cloudiness_perc) == 0:
+            return True
+        else:
+            return False
+
+    def make_csv(self, cloudiness_perc): 
+       
         code = cloudiness_perc[0][0]
         mypath = "Tables"
 
