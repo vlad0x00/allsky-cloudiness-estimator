@@ -429,12 +429,12 @@ class MainWindow(QMainWindow):
     def make_csv(self, cloudiness_perc): 
        
         code = cloudiness_perc[0][0]
-        mypath = "Tables"
+        mypath = "tables"
 
         if not os.path.isdir(mypath):
            os.makedirs(mypath)
 
-        file_path = "Tables/"+code+".csv"
+        file_path = "tables/"+code+".csv"
         f = open(file_path, "w")
         f.write("time,cloudiness"+'\n')
         for info in cloudiness_perc:
