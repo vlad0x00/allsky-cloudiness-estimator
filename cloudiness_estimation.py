@@ -25,8 +25,7 @@ class CameraWindow(QWidget):
 
         
         self.values = self.get_values()
-        print(self.values)
-        #return#open("internals/config/camera.txt").read().splitlines()
+        
 
         #FOV part
         lbl1 = QLabel("Width of View:", self)
@@ -417,7 +416,7 @@ class MainWindow(QMainWindow):
             config_dates.write(configfile)
 
     def make_csv(self, cloudiness_perc):
-
+        
         code = cloudiness_perc[0][0]
         mypath = "Tables"
 
