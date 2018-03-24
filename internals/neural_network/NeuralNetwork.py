@@ -50,29 +50,26 @@ class NeuralNetwork:
         layer = self.image
         layer = tf.layers.conv2d(layer, 32, (5, 5), padding='SAME', activation=tf.nn.relu, name='conv0')
         layer = tf.layers.conv2d(layer, 32, (5, 5), padding='SAME', activation=tf.nn.relu, name='conv1')
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding='SAME', name='maxpool0')
+        layer = tf.layers.max_pooling2d(layer, (2, 2), 2, padding='SAME', name='maxpool0')
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv2')
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding='SAME', name='maxpool1')
+        layer = tf.layers.max_pooling2d(layer, (2, 2), 2, padding='SAME', name='maxpool1')
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv3')
-        start0 = layer
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding='SAME', name='maxpool2')
+        start1 = layer
+        layer = tf.layers.max_pooling2d(layer, (2, 2), 2, padding='SAME', name='maxpool2')
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv4')
         layer = tf.layers.dropout(layer, rate=self.dropout_probability, name='drop0')
-        start1 = layer
-        layer = tf.layers.max_pooling2d(layer, (3, 3), 2, padding='SAME', name='maxpool3')
+        start0 = layer
+        layer = tf.layers.max_pooling2d(layer, (2, 2), 2, padding='SAME', name='maxpool3')
         layer = tf.layers.conv2d(layer, 128, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv5')
         layer = tf.layers.dropout(layer, rate=self.dropout_probability, name='drop1')
         layer = tf.image.resize_nearest_neighbor(layer, size=(label_shape[0] // 2, label_shape[1] // 2), name='upsample0')
-        end1 = layer
+        layer = tf.concat([start0, layer], 3, 'concat0')
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv6')
         layer = tf.layers.dropout(layer, rate=self.dropout_probability, name='drop2')
         layer = tf.image.resize_nearest_neighbor(layer, size=label_shape[0:2], name='upsample1')
-        end0 = layer
+        layer = tf.concat([start1, layer], 3, 'concat1')
         layer = tf.layers.conv2d(layer, 64, (3, 3), padding='SAME', activation=tf.nn.relu, name='conv7')
         layer = tf.layers.conv2d(layer, label_shape[2], (3, 3), padding='SAME', activation=tf.sigmoid, name='conv8')
-
-        concat0 = tf.concat([start0, end0], 3, 'concat0')
-        concat1 = tf.concat([start1, end1], 3, 'concat1')
 
         self.output = tf.identity(layer, name='output')
 
