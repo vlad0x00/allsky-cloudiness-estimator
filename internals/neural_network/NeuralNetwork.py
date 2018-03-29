@@ -9,7 +9,7 @@ from tqdm import tqdm
 VALIDATION_PERCENT = 0.1
 LOG_DIR = os.path.dirname(os.path.abspath(__file__))  + '/logs/'
 MODEL_FILENAME = os.path.dirname(os.path.abspath(__file__)) + '/model/network_model'
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.01
 DROPOUT_RATE = 0.25
 
 class NeuralNetwork:
