@@ -1,6 +1,6 @@
 import cv2
 
-ROTATIONS = 3
+ROTATIONS = 10
 
 def make_rotations(img):
     rows, cols = img.shape[0], img.shape[1]

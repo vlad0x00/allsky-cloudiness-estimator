@@ -5,6 +5,7 @@ from os import walk
 from os.path import join
 from neural_network.NeuralNetwork import NeuralNetwork
 from utils.labeling import is_label, remove_label
+import random
 
 parser = argparse.ArgumentParser()
 parser.add_argument('image_dir', help='Directory with train images and their labels')
@@ -22,8 +23,10 @@ def get_image_paths(dir):
         for filename in filenames:
             if is_label(filename):
                 paths.append((join(dirpath, remove_label(filename)), join(dirpath, filename)))
+
+    random.shuffle(paths)
+
     return paths
 
-nn = NeuralNetwork()
-nn.train(get_image_paths(image_dir), batch_size, epochs)
-nn.close()
+with NeuralNetwork() as nn:
+    nn.train(get_image_paths(image_dir), batch_size, epochs)

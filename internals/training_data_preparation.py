@@ -15,6 +15,8 @@ from utils.data_generator import generate_data
 from utils.name_generator import generate_name
 from utils.patching import extract_patches
 
+PROCESSING_THREADS = 2
+
 IMG_RESIZE = 512
 IMG_PATCH_SIZE = 256
 IMG_STRIDE = 128
@@ -165,7 +167,7 @@ def prepare_data():
     if limit > 0:
         image_paths = take(image_paths, limit)
 
-    pool = ThreadPool()
+    pool = ThreadPool(PROCESSING_THREADS)
     if unlabeled:
         pool.starmap(process_unlabeled, image_paths)
     else:

@@ -22,6 +22,6 @@ for sx, sy in coordinates:
 for sx, sy in coordinates:
 	cv2.circle(img, (sx, sy), 12, (0, 0, 255), 24)
 
-img = cv2.resize(img, (img.shape[1] // 6, img.shape[0] // 6))
-cv2.imshow('Plot', img)
-cv2.waitKey(0)
+#img = cv2.resize(img, (img.shape[1] // 6, img.shape[0] // 6))
+cv2.imwrite("plot.png", img)
+print("Image saved as plot.png")
