@@ -28,6 +28,5 @@ def get_image_paths(dir):
 
     return paths
 
-nn = NeuralNetwork()
-nn.train(get_image_paths(image_dir), batch_size, epochs)
-nn.close()
+with NeuralNetwork() as nn:
+    nn.train(get_image_paths(image_dir), batch_size, epochs)
